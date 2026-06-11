@@ -100,7 +100,7 @@ async function loadDashboard() {
 async function loadContracts(uid) {
     try {
         const contractsRef = db.collection('contracts').doc('v2').collection(uid);
-        const snapshot = await contractsRef.orderBy('startDateTime', 'desc').get();
+        const snapshot = await contractsRef.orderBy('startTime', 'desc').get();
         const tbody = document.getElementById('contractsTable');
 
         console.log('Buchungen geladen:', snapshot.size);
@@ -111,17 +111,32 @@ async function loadContracts(uid) {
         }
 
         let html = '';
+        // Produkt-Übersetzungen (exakt wie in der App)
+        const productTranslations = {
+            'ONE_HOUR': 'Eine Stunde',
+            'TWO_HOURS': 'Zwei Stunden',
+            'ONE_DAY': 'Ein Tag',
+            'HALF_DAY': 'Halber Tag',
+            'MULTI_DAYS': 'Mehrere Tage',
+            'TIMESPAN': 'Zeitspanne',
+            'RESERVATION': 'Reservierung'
+        };
+
         snapshot.forEach(doc => {
             const data = doc.data();
-            const startTime = new Date(data.startDateTime?.toDate?.() || data.startDateTime);
-            const endTime = new Date(data.endDateTime?.toDate?.() || data.endDateTime);
+            const startTime = new Date(data.startTime?.toDate?.() || data.startTime);
+            const endTime = new Date(data.endTime?.toDate?.() || data.endTime);
             const status = data.isDeleted ? 'Storniert' : 'Aktiv';
             const statusBadge = data.isDeleted ? 'danger' : 'success';
+            const productDisplay = productTranslations[data.product] || data.product || 'N/A';
 
             html += `
                 <tr>
                     <td><small>${doc.id.substring(0, 8)}</small></td>
-                    <td>${data.chairName || 'N/A'}</td>
+                    <td>${data.chair || 'N/A'}</td>
+                    <td>${data.customer || 'N/A'}</td>
+                    <td>${data.cashier || 'N/A'}</td>
+                    <td>${productDisplay}</td>
                     <td>${startTime.toLocaleDateString('de-DE')}</td>
                     <td>${endTime.toLocaleDateString('de-DE')}</td>
                     <td>${data.price || 0}€</td>
@@ -188,7 +203,7 @@ async function loadCharts(uid) {
         snapshot.forEach(doc => {
             const data = doc.data();
             if (!data.isDeleted) {
-                const date = new Date(data.startDateTime?.toDate?.() || data.startDateTime);
+                const date = new Date(data.startTime?.toDate?.() || data.startTime);
                 const monthKey = date.toLocaleDateString('de-DE', { month: 'short', year: 'numeric' });
                 months[monthKey] = (months[monthKey] || 0) + (data.price || 0);
             }
@@ -457,12 +472,13 @@ async function deleteContract(contractId, uid) {
     if (confirm('Möchtest du diese Buchung stornieren?')) {
         try {
             await db.collection('contracts').doc('v2').collection(uid).doc(contractId).update({
-                isDeleted: true
+                isDeleted: true,
+                price: 0  // Preis auf 0 setzen bei Stornierung
             });
             loadContracts(uid);
             loadStatistics(uid);
             loadCharts(uid);
-            alert('✅ Buchung storniert!');
+            alert('✅ Buchung storniert (Preis auf 0 €)!');
         } catch (error) {
             alert('❌ Fehler: ' + error.message);
         }
@@ -506,11 +522,11 @@ function exportToCSV(snapshot, uid) {
 
     snapshot.forEach(doc => {
         const data = doc.data();
-        const startTime = new Date(data.startDateTime?.toDate?.() || data.startDateTime);
-        const endTime = new Date(data.endDateTime?.toDate?.() || data.endDateTime);
+        const startTime = new Date(data.startTime?.toDate?.() || data.startTime);
+        const endTime = new Date(data.endTime?.toDate?.() || data.endTime);
         const status = data.isDeleted ? 'Storniert' : 'Aktiv';
 
-        csv += `${doc.id},"${data.chairName || 'N/A'}",${startTime.toLocaleDateString('de-DE')},${endTime.toLocaleDateString('de-DE')},${data.price || 0},${status}\n`;
+        csv += `${doc.id},"${data.chair || data.chairName || 'N/A'}",${startTime.toLocaleDateString('de-DE')},${endTime.toLocaleDateString('de-DE')},${data.price || 0},${status}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1151,6 +1167,146 @@ async function updateDurations() {
         alert(`❌ Fehler: ${error.message}`);
     }
 }
+
+// ===== NEUE BUCHUNG ERSTELLEN =====
+
+// UUID generieren
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// Körbe in Dropdown laden
+async function loadChairsForDropdown() {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const uid = currentUser.uid;
+    try {
+        const chairsRef = db.collection('chairOrder').doc(uid);
+        const doc = await chairsRef.get();
+        const dropdown = document.getElementById('contractChair');
+
+        if (doc.exists()) {
+            const chairs = doc.data();
+            dropdown.innerHTML = '<option value="">-- Korb wählen --</option>';
+
+            for (const [index, chair] of Object.entries(chairs)) {
+                if (typeof chair === 'string' && chair) {
+                    const option = document.createElement('option');
+                    option.value = chair;
+                    option.textContent = chair;
+                    dropdown.appendChild(option);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Fehler beim Laden der Körbe:', error);
+    }
+}
+
+// Neue Buchung erstellen
+document.getElementById('newContractForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        alert('❌ Nicht angemeldet!');
+        return;
+    }
+
+    const chair = document.getElementById('contractChair').value;
+    const customer = document.getElementById('contractCustomer').value || '';
+    const cashier = document.getElementById('contractCashier').value || '';
+    const product = document.getElementById('contractProduct').value;
+    const startTime = document.getElementById('contractStartTime').value;
+    const endTime = document.getElementById('contractEndTime').value;
+    const priceValue = document.getElementById('contractPrice').value;
+    const price = parseFloat(priceValue);
+
+    if (!chair || !product || !startTime || !endTime || !priceValue) {
+        alert('❌ Bitte alle Pflichtfelder ausfüllen (inkl. Preis)!');
+        return;
+    }
+
+    if (price < 0) {
+        alert('❌ Preis kann nicht negativ sein!');
+        return;
+    }
+
+    if (new Date(startTime) >= new Date(endTime)) {
+        alert('❌ Start-Zeit muss vor End-Zeit liegen!');
+        return;
+    }
+
+    try {
+        const uid = currentUser.uid;
+        const contractsRef = db.collection('contracts').doc('v2').collection(uid);
+
+        const now = new Date();
+        // Format times to ISO string with milliseconds (like App does)
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+
+        const newContract = {
+            // Basis-Infos
+            chair: chair,
+            customer: customer,
+            cashier: cashier,
+            product: product,
+            startTime: startDate.toISOString().replace('Z', '+02:00'),  // Add timezone
+            endTime: endDate.toISOString().replace('Z', '+02:00'),      // Add timezone
+            price: price,
+
+            // Status-Felder (wie in der App)
+            state: 'CONTRACT_READY',
+            isDeleted: false,
+            isMissing: false,
+            isPayed: false,
+            isRemoved: false,
+
+            // Zeitstempel
+            timeOfConstructionEpochSecond: now.getTime(),
+            lastUpdateTime: now.getTime(),
+
+            // IDs
+            uid: uid,
+            id: generateUUID(),
+            oldContractID: null,
+            updatedContractID: null,
+
+            // Zahlung
+            dateOfPayment: null
+        };
+
+        // Speichern mit Auto-ID
+        await contractsRef.add(newContract);
+
+        console.log('✅ Buchung erstellt!');
+        alert('✅ Buchung erfolgreich erstellt!');
+
+        // Modal schließen
+        const modal = bootstrap.Modal.getInstance(document.getElementById('newContractModal'));
+        modal?.hide();
+
+        // Form zurücksetzen
+        document.getElementById('newContractForm').reset();
+
+        // Tabelle aktualisieren
+        loadDashboard();
+    } catch (error) {
+        console.error('❌ Fehler beim Erstellen:', error);
+        alert(`❌ Fehler: ${error.message}`);
+    }
+});
+
+// Körbe laden wenn Modal öffnet
+document.getElementById('newContractModal')?.addEventListener('show.bs.modal', () => {
+    loadChairsForDropdown();
+});
 
 // Auto-refresh every 30 seconds
 setInterval(() => {
