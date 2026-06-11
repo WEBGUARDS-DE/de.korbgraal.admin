@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strandkorb Admin - Verwaltung</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #667eea !important;
+        }
+        .container-main {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+        .table {
+            font-size: 0.9rem;
+        }
+        .badge {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+        }
+        .tab-content {
+            background: white;
+            border-radius: 0 0 10px 10px;
+            padding: 20px;
+        }
+        .nav-tabs .nav-link {
+            color: #666;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -20px;
+        }
+        .nav-tabs .nav-link.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+        }
+        .spinner-border {
+            color: white;
+        }
+        /* Chair Grid Styles */
+        .chair-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 20px 0;
+        }
+        .chair-card {
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid #ddd;
+            text-align: center;
+            user-select: none;
+        }
+        .chair-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .chair-card.neu {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+        .chair-card.komfort {
+            background-color: #ffc107;
+            border-color: #ff9800;
+            color: black;
+        }
+        .chair-card.klassik {
+            background-color: #ffffff;
+            border-color: #999;
+            color: black;
+        }
+        .chair-card.mattenweg {
+            background-color: #b3d9ff;
+            border-color: #0066cc;
+            color: black;
+        }
+        .chair-card.vermietung {
+            background-color: #d4a5ff;
+            border-color: #9c27b0;
+            color: black;
+        }
+        .chair-card.fkk {
+            background-color: #ffcccc;
+            border-color: #ff6666;
+            color: black;
+        }
+        .chair-card.weg {
+            background-color: #ccffcc;
+            border-color: #66cc66;
+            color: black;
+        }
+        .chair-card.freifläche {
+            background-color: #e0e0e0;
+            border-color: #999;
+            border-style: dotted;
+            border-width: 2px;
+            color: #666;
+            opacity: 0.6;
+        }
+        .chair-card.n-marker {
+            background-color: #ffff99;
+            border-color: #ffcc00;
+            color: black;
+        }
+        .chair-card.l-marker {
+            background-color: #ffdd44;
+            border-color: #ffbb00;
+            color: black;
+        }
+        .chair-position {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            opacity: 0.7;
+        }
+        .chair-name {
+            font-size: 18px;
+            font-weight: bold;
+            word-break: break-word;
+        }
+        .chair-type {
+            font-size: 11px;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+        @media (max-width: 768px) {
+            .chair-grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-umbrella"></i> Strandkorb Admin
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <span class="nav-link" id="userEmail"></span>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-danger btn-sm" id="logoutBtn" onclick="signOut()">
+                        <i class="bi bi-box-arrow-right"></i> Abmelden
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Login Container -->
+<div id="authContainer" class="auth-container" style="display: none;">
+    <div class="card login-card">
+        <div class="card-body p-5">
+            <h2 class="card-title text-center mb-4">
+                <i class="bi bi-umbrella"></i> Strandkorb Admin
+            </h2>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Passwort</label>
+                    <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+            <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div id="mainContent" style="display: none;">
+    <div class="container-main">
+        <!-- Dashboard Header -->
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-white mb-4">
+                    <i class="bi bi-house-fill"></i> Dashboard
+                </h1>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted">Aktive Buchungen</h6>
+                        <h3 id="activeContractsCount">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted">Gesamtumsatz</h6>
+                        <h3 id="totalRevenueCount">0€</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted">Benutzer</h6>
+                        <h3 id="usersCount">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted">Status</h6>
+                        <h3><span class="badge bg-success">Online</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card">
+            <ul class="nav nav-tabs" role="tablist" style="background: white; border-radius: 10px 10px 0 0; border: none; padding: 20px 20px 0 20px;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="contractsTab" data-bs-toggle="tab" data-bs-target="#contractsContent" type="button">
+                        <i class="bi bi-list-check"></i> Buchungen
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pricesTab" data-bs-toggle="tab" data-bs-target="#pricesContent" type="button">
+                        <i class="bi bi-tag"></i> Preise
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="chairsTab" data-bs-toggle="tab" data-bs-target="#chairsContent" type="button">
+                        <i class="bi bi-chair"></i> Körbe
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="statsTab" data-bs-toggle="tab" data-bs-target="#statsContent" type="button">
+                        <i class="bi bi-graph-up"></i> Statistiken
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="planTab" data-bs-toggle="tab" data-bs-target="#planContent" type="button">
+                        <i class="bi bi-map"></i> Plan
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="settingsTab" data-bs-toggle="tab" data-bs-target="#settingsContent" type="button">
+                        <i class="bi bi-gear"></i> Einstellungen
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Contracts Tab -->
+                <div class="tab-pane fade show active" id="contractsContent" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Alle Buchungen</h5>
+                        <button class="btn btn-success btn-sm" id="exportBtn" disabled>
+                            <i class="bi bi-download"></i> CSV Exportieren
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Stuhl</th>
+                                    <th>Von</th>
+                                    <th>Bis</th>
+                                    <th>Preis</th>
+                                    <th>Status</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contractsTable">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">Wird geladen...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Prices Tab -->
+                <div class="tab-pane fade" id="pricesContent" role="tabpanel">
+                    <h5 class="mb-3">💰 Preismanagement</h5>
+                    <div id="pricingTab"></div>
+                </div>
+
+                <!-- Chairs Tab -->
+                <div class="tab-pane fade" id="chairsContent" role="tabpanel">
+                    <h5 class="mb-3">Körbe verwalten</h5>
+                    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addChairModal">
+                        <i class="bi bi-plus"></i> Neuen Korb hinzufügen
+                    </button>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Typ</th>
+                                    <th>Status</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="chairsTable">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Wird geladen...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div class="tab-pane fade" id="statsContent" role="tabpanel">
+                    <h5 class="mb-4">Grafiken & Statistiken</h5>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <canvas id="revenueChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <canvas id="distributionChart" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Tab -->
+                <div class="tab-pane fade" id="planContent" role="tabpanel">
+                    <h5 class="mb-4">Körbe-Plan (2-spaltig)</h5>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <strong>Legende:</strong><br>
+                                <span class="badge" style="background-color: #ffff99; color: black;">mit "N"</span>
+                                <span class="badge" style="background-color: #ffdd44; color: black;">mit "L"</span>
+                                <span class="badge" style="background-color: #fff3cd; color: black;">Neue Körbe 2026</span>
+                                <span class="badge" style="background-color: #ffc107; color: black;">Komfort</span>
+                                <span class="badge" style="background-color: #f0f0f0; color: black;">Klassik</span>
+                                <span class="badge" style="background-color: #d4a5ff; color: black;">Vermietungswagen (VM)</span>
+                                <span class="badge" style="background-color: #ffcccc; color: black;">FKK</span>
+                                <span class="badge" style="background-color: #ccffcc; color: black;">Weg (Zugang)</span>
+                                <span class="badge" style="background-color: #e0e0e0; color: black;">Freifläche</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chairGrid" class="chair-grid">
+                        <!-- Grid wird hier eingefügt -->
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div class="tab-pane fade" id="settingsContent" role="tabpanel">
+                    <h5 class="mb-4">⚙️ Geschäftsregeln & Einstellungen</h5>
+                    <div id="settingsContainer">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Einstellungen werden geladen...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Chair Modal -->
+<div class="modal fade" id="addChairModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Neuen Korb hinzufügen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addChairForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Typ</label>
+                        <select class="form-control" name="type" required>
+                            <option value="">Wähle einen Typ</option>
+                            <option value="KOMFORT">KOMFORT</option>
+                            <option value="KLASSIK">KLASSIK</option>
+                            <option value="L_KORB">L-KORB</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Hinzufügen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="app-fixed.js"></script>
+
+</body>
+</html>
