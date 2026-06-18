@@ -718,38 +718,38 @@ async function loadPrices() {
             return;
         }
 
-        console.log('Lade Preise...');
+        console.log('Lade v2026 Preise...');
 
-        // Lade KLASSIK Preise
+        // Lade KLASSIK und KOMFORT Preise von prices/v2026/
         let klassikDoc, komfortDoc;
         try {
-            klassikDoc = await db.collection('prices').doc('KLASSIK').get();
-            console.log('KLASSIK Doc exists:', klassikDoc.exists, klassikDoc.data());
+            klassikDoc = await db.collection('prices').collection('v2026').doc('KLASSIK').get();
+            console.log('v2026 KLASSIK Doc exists:', klassikDoc.exists, klassikDoc.data());
         } catch (e) {
-            console.error('Fehler beim Laden von KLASSIK:', e);
+            console.error('Fehler beim Laden von v2026 KLASSIK:', e);
         }
 
         try {
-            komfortDoc = await db.collection('prices').doc('KOMFORT').get();
-            console.log('KOMFORT Doc exists:', komfortDoc.exists, komfortDoc.data());
+            komfortDoc = await db.collection('prices').collection('v2026').doc('KOMFORT').get();
+            console.log('v2026 KOMFORT Doc exists:', komfortDoc.exists, komfortDoc.data());
         } catch (e) {
-            console.error('Fehler beim Laden von KOMFORT:', e);
+            console.error('Fehler beim Laden von v2026 KOMFORT:', e);
         }
 
         if (klassikDoc && klassikDoc.exists && komfortDoc && komfortDoc.exists) {
             // WICHTIG: Container ZUERST leeren!
             pricingTab.innerHTML = '';
-            console.log('Container geleert, zeige Preise...');
+            console.log('Container geleert, zeige v2026 Preise...');
 
-            displayPriceTable('KLASSIK', klassikDoc.data());
-            displayPriceTable('KOMFORT', komfortDoc.data());
-            console.log('✅ Preise angezeigt');
+            displayV2026PriceTable('KLASSIK', klassikDoc.data());
+            displayV2026PriceTable('KOMFORT', komfortDoc.data());
+            console.log('✅ v2026 Preise angezeigt');
         } else {
-            console.warn('Preisdokumente nicht vollständig vorhanden');
-            pricingTab.innerHTML = '<div class="alert alert-warning"><strong>⚠️ Preise nicht konfiguriert</strong><br>KLASSIK exists: ' + (klassikDoc && klassikDoc.exists) + '<br>KOMFORT exists: ' + (komfortDoc && komfortDoc.exists) + '</div>';
+            console.warn('v2026 Preisdokumente nicht vollständig vorhanden');
+            pricingTab.innerHTML = '<div class="alert alert-warning"><strong>⚠️ v2026 Preise nicht konfiguriert</strong><br>KLASSIK exists: ' + (klassikDoc && klassikDoc.exists) + '<br>KOMFORT exists: ' + (komfortDoc && komfortDoc.exists) + '</div>';
         }
     } catch (error) {
-        console.error('❌ Fehler beim Laden der Preise:', error);
+        console.error('❌ Fehler beim Laden der v2026 Preise:', error);
         const pricingTab = document.getElementById('pricingTab');
         if (pricingTab) {
             pricingTab.innerHTML = '<div class="alert alert-danger"><strong>❌ Fehler:</strong><br>' + error.message + '<br><br>Öffne Browser Console (F12) für Details.</div>';
@@ -757,8 +757,8 @@ async function loadPrices() {
     }
 }
 
-// Display Price Table
-function displayPriceTable(category, priceData) {
+// Display v2026 Price Table with all 18 products
+function displayV2026PriceTable(category, priceData) {
     const container = document.getElementById('pricingTab');
     if (!container) return;
 
@@ -768,66 +768,108 @@ function displayPriceTable(category, priceData) {
     }
 
     const durations = priceData.durations || {};
-    const durationLabels = {
-        '1': '1 Stunde',
-        '2': '2 Stunden',
-        '3': '3 Stunden',
-        '6': '6 Stunden',
-        '24': '1 Tag',
-        '48': '2 Tage',
-        '72': '3 Tage',
-        '96': '4 Tage',
-        '120': '5 Tage',
-        '144': '6 Tage',
-        '168': '7 Tage'
+    const productLabels = {
+        '1h': '1 Stunde',
+        'halfDay': 'Halber Tag',
+        'days': 'Tage (siehe unten)',
+        'additionalDay': 'Zusätzlicher Tag',
+        'oneMonth': '1 Monat'
     };
 
     let html = `
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">${category} Preise</h5>
+                <h5 class="mb-0">${category} Preise (v2026)</h5>
             </div>
             <div class="card-body">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Dauer</th>
-                            <th>Preis (€)</th>
-                            <th>Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody>
     `;
 
-    Object.entries(durations).forEach(([duration, priceInfo]) => {
-        const label = durationLabels[duration] || `${duration}h`;
-        let priceDisplay = '';
+    // 1 Hour Price
+    if (durations['1h']) {
+        html += `
+            <div class="alert alert-info mb-3">
+                <strong>⏱️ 1 Stunde:</strong> ${durations['1h']}€
+                <button class="btn btn-sm btn-warning ms-2" onclick="editV2026Price('${category}', '1h')">
+                    <i class="bi bi-pencil"></i> Bearbeiten
+                </button>
+            </div>
+        `;
+    }
 
-        if (typeof priceInfo === 'number') {
-            priceDisplay = `${priceInfo}€`;
-        } else if (typeof priceInfo === 'object' && priceInfo.before && priceInfo.after) {
-            priceDisplay = `${priceInfo.before}€ (vor 16:00) / ${priceInfo.after}€ (nach 16:00)`;
-        }
+    // Half Day Price
+    if (durations['halfDay']) {
+        const halfDayPrice = durations['halfDay'];
+        const price = typeof halfDayPrice === 'object' ? halfDayPrice.price : halfDayPrice;
+        html += `
+            <div class="alert alert-info mb-3">
+                <strong>🌤️ Halber Tag:</strong> ${price}€
+                <button class="btn btn-sm btn-warning ms-2" onclick="editV2026Price('${category}', 'halfDay')">
+                    <i class="bi bi-pencil"></i> Bearbeiten
+                </button>
+            </div>
+        `;
+    }
 
+    // Day Prices Table (1-14 days)
+    html += `
+        <h6 class="mt-4 mb-3">📅 Tagespreise (1-14 Tage)</h6>
+        <table class="table table-hover table-sm">
+            <thead>
+                <tr>
+                    <th>Tage</th>
+                    <th>Preis (€)</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    const daysData = durations['days'] || {};
+    for (let i = 1; i <= 14; i++) {
+        const price = daysData[i] || '-';
         html += `
             <tr>
-                <td><strong>${label}</strong></td>
-                <td>${priceDisplay}</td>
+                <td><strong>${i} Tag${i > 1 ? 'e' : ''}</strong></td>
+                <td>${price}€</td>
                 <td>
-                    <button class="btn btn-sm btn-warning" onclick="editPrice('${category}', '${duration}')">
-                        <i class="bi bi-pencil"></i> Bearbeiten
+                    <button class="btn btn-sm btn-warning" onclick="editV2026DayPrice('${category}', ${i})">
+                        <i class="bi bi-pencil"></i>
                     </button>
                 </td>
             </tr>
         `;
-    });
+    }
+
+    // Additional Day Price
+    html += `
+            </tbody>
+        </table>
+    `;
+
+    if (durations['additionalDay']) {
+        html += `
+            <div class="alert alert-info mb-3 mt-3">
+                <strong>➕ Zusätzlicher Tag:</strong> ${durations['additionalDay']}€
+                <button class="btn btn-sm btn-warning ms-2" onclick="editV2026Price('${category}', 'additionalDay')">
+                    <i class="bi bi-pencil"></i> Bearbeiten
+                </button>
+            </div>
+        `;
+    }
+
+    // One Month Price
+    if (durations['oneMonth']) {
+        html += `
+            <div class="alert alert-info mb-3">
+                <strong>📆 1 Monat:</strong> ${durations['oneMonth']}€
+                <button class="btn btn-sm btn-warning ms-2" onclick="editV2026Price('${category}', 'oneMonth')">
+                    <i class="bi bi-pencil"></i> Bearbeiten
+                </button>
+            </div>
+        `;
+    }
 
     html += `
-                    </tbody>
-                </table>
-                <button class="btn btn-success" onclick="addNewPrice('${category}')">
-                    <i class="bi bi-plus"></i> Neue Dauer hinzufügen
-                </button>
             </div>
         </div>
     `;
@@ -835,31 +877,59 @@ function displayPriceTable(category, priceData) {
     container.innerHTML += html;
 }
 
-// Edit Price
-async function editPrice(category, duration) {
-    const docRef = db.collection('prices').doc(category);
+// Edit v2026 Price
+async function editV2026Price(category, priceKey) {
+    const docRef = db.collection('prices').collection('v2026').doc(category);
     const snapshot = await docRef.get();
+    if (!snapshot.exists) {
+        alert('Dokument nicht gefunden!');
+        return;
+    }
+
     const data = snapshot.data();
     const durations = data.durations || {};
-    const currentPrice = durations[duration];
+    let currentValue = durations[priceKey];
 
-    let newPrice;
-    if (typeof currentPrice === 'number') {
-        newPrice = prompt(`Neuer Preis für ${duration}h (€):`, currentPrice);
-        if (newPrice !== null) {
-            durations[duration] = parseInt(newPrice);
-            await savePrices(category, durations);
+    let newValue;
+    if (priceKey === 'halfDay' && typeof currentValue === 'object') {
+        newValue = prompt(`Neuer Preis für Halben Tag (€):`, currentValue.price);
+        if (newValue !== null) {
+            durations[priceKey] = { price: parseInt(newValue), startTime: currentValue.startTime || '13:30' };
+            await docRef.update({ durations });
             loadPrices();
         }
-    } else if (typeof currentPrice === 'object') {
-        const beforePrice = prompt(`Preis vor 16:00 (€):`, currentPrice.before);
-        if (beforePrice !== null) {
-            const afterPrice = prompt(`Preis nach 16:00 (€):`, currentPrice.after);
-            if (afterPrice !== null) {
-                durations[duration] = {
-                    before: parseInt(beforePrice),
-                    after: parseInt(afterPrice),
-                    cutoffHour: currentPrice.cutoffHour || 16
+    } else {
+        newValue = prompt(`Neuer Preis für ${priceKey} (€):`, currentValue);
+        if (newValue !== null) {
+            durations[priceKey] = parseInt(newValue);
+            await docRef.update({ durations });
+            loadPrices();
+        }
+    }
+}
+
+// Edit v2026 Day Price
+async function editV2026DayPrice(category, day) {
+    const docRef = db.collection('prices').collection('v2026').doc(category);
+    const snapshot = await docRef.get();
+    if (!snapshot.exists) {
+        alert('Dokument nicht gefunden!');
+        return;
+    }
+
+    const data = snapshot.data();
+    const durations = data.durations || {};
+    if (!durations['days']) durations['days'] = {};
+
+    const currentPrice = durations['days'][day] || '';
+    const newPrice = prompt(`Preis für ${day} Tag(e) (€):`, currentPrice);
+
+    if (newPrice !== null && newPrice !== '') {
+        durations['days'][day] = parseInt(newPrice);
+        await docRef.update({ durations });
+        loadPrices();
+    }
+}
                 };
                 await savePrices(category, durations);
                 loadPrices();
