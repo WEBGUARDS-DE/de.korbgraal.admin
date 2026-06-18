@@ -91,6 +91,11 @@ async function loadDashboard() {
         loadChairPlan(uid);
         loadPrices();
         loadSettings();
+        // Load admin panels
+        loadRefundPrices();
+        loadUsers();
+        loadAppSettings();
+        loadDeviceSelect();
     } catch (error) {
         console.error('Dashboard Load Fehler:', error);
     }
@@ -1218,6 +1223,295 @@ async function updateDurations() {
         loadSettings();
     } catch (error) {
         console.error('Fehler beim Update:', error);
+        alert(`❌ Fehler: ${error.message}`);
+    }
+}
+
+// ==================== REFUND PRICES ====================
+async function loadRefundPrices() {
+    try {
+        const container = document.getElementById('refundContainer');
+        const refundDoc = await db.collection('refund-prices').doc('v2026').get();
+
+        if (!refundDoc.exists) {
+            container.innerHTML = '<div class="alert alert-warning">Rückerstattungspreise nicht konfiguriert</div>';
+            return;
+        }
+
+        const data = refundDoc.data();
+        let html = '';
+
+        ['KLASSIK', 'KOMFORT'].forEach(category => {
+            const prices = data[category] || {};
+            html += `
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">${category}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Volle Rückerstattung (€):</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="full_refund_${category}"
+                                        value="${prices.one_hour_full_refund || 0}" step="0.01">
+                                    <button class="btn btn-primary" onclick="updateRefundPrice('${category}', 'one_hour_full_refund', document.getElementById('full_refund_${category}').value)">Speichern</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Halbe Rückerstattung (€):</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="half_refund_${category}"
+                                        value="${prices.one_hour_half_refund || 0}" step="0.01">
+                                    <button class="btn btn-primary" onclick="updateRefundPrice('${category}', 'one_hour_half_refund', document.getElementById('half_refund_${category}').value)">Speichern</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Kulanzfrist (Min):</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="grace_period_${category}"
+                                        value="${prices.grace_period_minutes || 15}">
+                                    <button class="btn btn-primary" onclick="updateRefundPrice('${category}', 'grace_period_minutes', document.getElementById('grace_period_${category}').value)">Speichern</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Fehler beim Laden der Rückerstattungspreise:', error);
+        document.getElementById('refundContainer').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+    }
+}
+
+async function updateRefundPrice(category, field, value) {
+    try {
+        const docRef = db.collection('refund-prices').doc('v2026');
+        const updateData = {};
+        updateData[`${category}.${field}`] = isNaN(value) ? value : parseFloat(value);
+
+        await docRef.update(updateData);
+        alert(`✅ ${category} ${field} aktualisiert!`);
+        loadRefundPrices();
+    } catch (error) {
+        alert(`❌ Fehler: ${error.message}`);
+    }
+}
+
+// ==================== USER MANAGEMENT ====================
+async function loadUsers() {
+    try {
+        const usersRef = db.collection('users');
+        const snapshot = await usersRef.get();
+        const tbody = document.getElementById('usersTable');
+
+        let html = '';
+        const userEmails = {
+            'QXyzCIkPR6TU2ZRPYAz1UKpotXz2': 'korbgraal@gmail.com',
+            'NqFQuiLya4WtDBZHI1sTTrGaRwB2': 'test@test.test',
+            '6B590N5iGVTDF3mubg9rzTeyMYx2': 'automated@test.test',
+            '4uiE2FaPhuVWNK1WPOj2nJKudO22': 'uloro@web.de',
+            'MM0PEKcsIJZpJtLT0AMPJcxuJtU2': 'korbgraal24@gmail.com',
+            'wICurI0ukRQCHizBVVD1jyUHvxz1': 'ulrich@korbgraal.de',
+            'dGC8miw2hybTvMHVGvQcc2lCfZH3': 'ob@webguards.de',
+            'zmVVYbR1ureZ2uNHffvxqW4eypw2': 'thorsten@korbgraal.de',
+            '9PPfEoDRheOhiVsNc8YUoCCYXtv2': 'aushilfe@korbgraal.de'
+        };
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const email = userEmails[doc.id] || 'Unbekannt';
+            const version = data.appVersion || '2025';
+            const badge = version === 'new' ? '<span class="badge bg-success">NEW</span>' : '<span class="badge bg-secondary">2025</span>';
+
+            html += `
+                <tr>
+                    <td>${email}</td>
+                    <td><small>${doc.id}</small></td>
+                    <td>${badge}</td>
+                    <td>
+                        <button class="btn btn-sm btn-${version === '2025' ? 'success' : 'warning'}"
+                            onclick="toggleUserVersion('${doc.id}', '${version}')">
+                            ${version === '2025' ? 'Upgrade zu NEW' : 'Downgrade zu 2025'}
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html || '<tr><td colspan="4" class="text-center">Keine Benutzer gefunden</td></tr>';
+    } catch (error) {
+        console.error('Fehler beim Laden der Benutzer:', error);
+    }
+}
+
+async function toggleUserVersion(uid, currentVersion) {
+    const newVersion = currentVersion === '2025' ? 'new' : '2025';
+    try {
+        await db.collection('users').doc(uid).update({
+            appVersion: newVersion
+        });
+        alert(`✅ Benutzer zu ${newVersion} gewechselt!`);
+        loadUsers();
+    } catch (error) {
+        alert(`❌ Fehler: ${error.message}`);
+    }
+}
+
+// ==================== CHAIR ORDER ====================
+async function loadChairOrder(uid) {
+    if (!uid) return;
+
+    try {
+        const chairOrderDoc = await db.collection('chairOrder').doc(uid).get();
+        const container = document.getElementById('chairOrderContainer');
+
+        if (!chairOrderDoc.exists) {
+            container.innerHTML = '<div class="alert alert-warning">Keine Reihenfolge für dieses Gerät konfiguriert</div>';
+            return;
+        }
+
+        const data = chairOrderDoc.data();
+        let html = '<div class="row">';
+
+        for (let i = 0; i < 96; i++) {
+            const chair = data[i.toString()] || '';
+            html += `
+                <div class="col-md-2 mb-2">
+                    <div class="card p-2">
+                        <label class="form-label mb-2">Pos ${i}</label>
+                        <input type="text" class="form-control form-control-sm"
+                            id="chair_${i}" value="${chair}" placeholder="Leer">
+                    </div>
+                </div>
+            `;
+        }
+
+        html += '</div><button class="btn btn-primary mt-3" onclick="saveChairOrder(\'' + uid + '\')">Speichern</button>';
+        container.innerHTML = html;
+    } catch (error) {
+        document.getElementById('chairOrderContainer').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+    }
+}
+
+async function saveChairOrder(uid) {
+    try {
+        const updateData = {};
+        for (let i = 0; i < 96; i++) {
+            const input = document.getElementById(`chair_${i}`);
+            updateData[i.toString()] = input.value || '';
+        }
+
+        await db.collection('chairOrder').doc(uid).set(updateData);
+        alert('✅ Reihenfolge gespeichert!');
+    } catch (error) {
+        alert(`❌ Fehler: ${error.message}`);
+    }
+}
+
+// Populate device select
+async function loadDeviceSelect() {
+    try {
+        const contractsRef = db.collectionGroup('contracts').limit(1);
+        const snapshot = await db.collection('contracts').doc('v2').collection('QXyzCIkPR6TU2ZRPYAz1UKpotXz2').get();
+
+        // For now, show a few known devices
+        const select = document.getElementById('deviceSelect');
+        const devices = [
+            'QXyzCIkPR6TU2ZRPYAz1UKpotXz2',
+            'NqFQuiLya4WtDBZHI1sTTrGaRwB2',
+            'dGC8miw2hybTvMHVGvQcc2lCfZH3'
+        ];
+
+        devices.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device;
+            option.textContent = device.substring(0, 8) + '...';
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Fehler beim Laden der Geräte:', error);
+    }
+}
+
+// ==================== APP SETTINGS ====================
+async function loadAppSettings() {
+    try {
+        const settingsDoc = await db.collection('settings').doc('config').get();
+        const container = document.getElementById('appSettingsContainer');
+
+        if (!settingsDoc.exists) {
+            container.innerHTML = '<div class="alert alert-warning">App-Einstellungen nicht konfiguriert</div>';
+            return;
+        }
+
+        const data = settingsDoc.data();
+        let html = `
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">🔧 Konfigurationen</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Cutoff-Stunde:</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="cutoff_hour" value="${data.cutoffHour || 16}">
+                                    <button class="btn btn-primary btn-sm" onclick="updateAppSetting('cutoffHour', document.getElementById('cutoff_hour').value)">Speichern</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Max. Buchungstage:</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="max_booking_days" value="${data.maxBookingDays || 30}">
+                                    <button class="btn btn-primary btn-sm" onclick="updateAppSetting('maxBookingDays', document.getElementById('max_booking_days').value)">Speichern</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Min. Buchungsstunden:</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="min_booking_hours" value="${data.minBookingHours || 1}">
+                                    <button class="btn btn-primary btn-sm" onclick="updateAppSetting('minBookingHours', document.getElementById('min_booking_hours').value)">Speichern</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Kulanzfrist (Minuten):</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="grace_period_minutes" value="${data.gracePeriodMinutes || 15}">
+                                    <button class="btn btn-primary btn-sm" onclick="updateAppSetting('gracePeriodMinutes', document.getElementById('grace_period_minutes').value)">Speichern</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">KOMFORT Preismultiplier:</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="komfort_multiplier" value="${data.komfortPriceMultiplier || 1.2}" step="0.1">
+                                    <button class="btn btn-primary btn-sm" onclick="updateAppSetting('komfortPriceMultiplier', document.getElementById('komfort_multiplier').value)">Speichern</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Fehler beim Laden der App-Einstellungen:', error);
+        document.getElementById('appSettingsContainer').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+    }
+}
+
+async function updateAppSetting(key, value) {
+    try {
+        await db.collection('settings').doc('config').update({
+            [key]: isNaN(value) ? value : parseFloat(value),
+            lastUpdated: new Date()
+        });
+        alert(`✅ ${key} aktualisiert!`);
+        loadAppSettings();
+    } catch (error) {
         alert(`❌ Fehler: ${error.message}`);
     }
 }

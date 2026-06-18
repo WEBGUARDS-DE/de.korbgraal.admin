@@ -280,7 +280,17 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="pricesTab" data-bs-toggle="tab" data-bs-target="#pricesContent" type="button">
-                        <i class="bi bi-tag"></i> Preise
+                        <i class="bi bi-tag"></i> Preise v2026
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="refundTab" data-bs-toggle="tab" data-bs-target="#refundContent" type="button">
+                        <i class="bi bi-arrow-counterclockwise"></i> Rückerstattungen
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="usersTab" data-bs-toggle="tab" data-bs-target="#usersContent" type="button">
+                        <i class="bi bi-people"></i> Benutzer
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -289,18 +299,18 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="chairOrderTab" data-bs-toggle="tab" data-bs-target="#chairOrderContent" type="button">
+                        <i class="bi bi-diagram-3"></i> Körbe-Reihenfolge
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="statsTab" data-bs-toggle="tab" data-bs-target="#statsContent" type="button">
                         <i class="bi bi-graph-up"></i> Statistiken
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="planTab" data-bs-toggle="tab" data-bs-target="#planContent" type="button">
-                        <i class="bi bi-map"></i> Plan
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="settingsTab" data-bs-toggle="tab" data-bs-target="#settingsContent" type="button">
-                        <i class="bi bi-gear"></i> Einstellungen
+                    <button class="nav-link" id="appSettingsTab" data-bs-toggle="tab" data-bs-target="#appSettingsContent" type="button">
+                        <i class="bi bi-gear"></i> App-Einstellungen
                     </button>
                 </li>
             </ul>
@@ -413,9 +423,62 @@
                 </div>
 
                 <!-- Settings Tab -->
-                <div class="tab-pane fade" id="settingsContent" role="tabpanel">
-                    <h5 class="mb-4">⚙️ Geschäftsregeln & Einstellungen</h5>
-                    <div id="settingsContainer">
+                <!-- Refund Tab -->
+                <div class="tab-pane fade" id="refundContent" role="tabpanel">
+                    <h5 class="mb-3">💰 Rückerstattungspreise (v2026)</h5>
+                    <div id="refundContainer" class="row">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> Rückerstattungspreise werden geladen...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div class="tab-pane fade" id="usersContent" role="tabpanel">
+                    <h5 class="mb-3">👥 Benutzer-Verwaltung</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>E-Mail</th>
+                                    <th>UID</th>
+                                    <th>App-Version</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Wird geladen...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ChairOrder Tab -->
+                <div class="tab-pane fade" id="chairOrderContent" role="tabpanel">
+                    <h5 class="mb-3">🔢 Körbe-Reihenfolge</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Gerät auswählen:</label>
+                            <select id="deviceSelect" class="form-select" onchange="loadChairOrder(this.value)">
+                                <option value="">-- Gerät wählen --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="chairOrderContainer" class="mt-4">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Gerät auswählen um Reihenfolge zu konfigurieren...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- App Settings Tab -->
+                <div class="tab-pane fade" id="appSettingsContent" role="tabpanel">
+                    <h5 class="mb-4">⚙️ App-Konfiguration</h5>
+                    <div id="appSettingsContainer">
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i> Einstellungen werden geladen...
                         </div>
