@@ -3,376 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strandkorb Admin - Verwaltung</title>
+    <title>Strandkorb 26 Admin - Verwaltung</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .navbar {
-            background: rgba(255,255,255,0.95);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .navbar-brand {
-            font-weight: bold;
-            color: #667eea !important;
-        }
-        .container-main {
-            margin-top: 30px;
-            margin-bottom: 30px;
-        }
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        }
-        .table {
-            font-size: 0.9rem;
-        }
-        .badge {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.85rem;
-        }
-        .tab-content {
-            background: white;
-            border-radius: 0 0 10px 10px;
-            padding: 20px;
-        }
-        .nav-tabs .nav-link {
-            color: #666;
-            border: none;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -20px;
-        }
-        .nav-tabs .nav-link.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            background: white;
-        }
-        .auth-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .login-card {
-            width: 100%;
-            max-width: 400px;
-        }
-        .spinner-border {
-            color: white;
-        }
-        /* Chair Grid Styles */
-        .chair-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            padding: 20px 0;
-        }
-        .chair-card {
-            padding: 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 2px solid #ddd;
-            text-align: center;
-            user-select: none;
-        }
-        .chair-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .chair-card.neu {
-            background-color: #fff3cd;
-            border-color: #ffc107;
-        }
-        .chair-card.komfort {
-            background-color: #ffc107;
-            border-color: #ff9800;
-            color: black;
-        }
-        .chair-card.klassik {
-            background-color: #ffffff;
-            border-color: #999;
-            color: black;
-        }
-        .chair-card.mattenweg {
-            background-color: #b3d9ff;
-            border-color: #0066cc;
-            color: black;
-        }
-        .chair-card.vermietung {
-            background-color: #d4a5ff;
-            border-color: #9c27b0;
-            color: black;
-        }
-        .chair-card.fkk {
-            background-color: #ffcccc;
-            border-color: #ff6666;
-            color: black;
-        }
-        .chair-card.weg {
-            background-color: #ccffcc;
-            border-color: #66cc66;
-            color: black;
-        }
-        .chair-card.freifläche {
-            background-color: #e0e0e0;
-            border-color: #999;
-            border-style: dotted;
-            border-width: 2px;
-            color: #666;
-            opacity: 0.6;
-        }
-        .chair-card.n-marker {
-            background-color: #ffff99;
-            border-color: #ffcc00;
-            color: black;
-        }
-        .chair-card.l-marker {
-            background-color: #ffdd44;
-            border-color: #ffbb00;
-            color: black;
-        }
-        .chair-position {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            opacity: 0.7;
-        }
-        .chair-name {
-            font-size: 18px;
-            font-weight: bold;
-            word-break: break-word;
-        }
-        .chair-type {
-            font-size: 11px;
-            margin-top: 8px;
-            opacity: 0.8;
-        }
-        @media (max-width: 768px) {
-            .chair-grid {
-                grid-template-columns: repeat(1, 1fr);
-            }
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Auth Container -->
+    <div id="authContainer" class="auth-container">
+        <div class="login-card card shadow-lg">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-beach" style="font-size: 3rem; color: #FF9800;"></i>
+                    <h2 class="mt-3" style="color: #FF9800;">Strandkorb 26</h2>
+                    <p class="text-muted">Admin-Panel</p>
+                </div>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label class="form-label">E-Mail</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Passwort</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div id="loginError" class="alert alert-danger" style="display: none;"></div>
+                    <button type="submit" class="btn btn-orange w-100">Anmelden</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg sticky-top">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-            <i class="bi bi-umbrella"></i> Strandkorb Admin
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <span class="nav-link" id="userEmail"></span>
-                </li>
-                <li class="nav-item">
-                    <button class="btn btn-outline-danger btn-sm" id="logoutBtn" onclick="signOut()">
+    <!-- Main Content -->
+    <div id="mainContent" style="display: none;">
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg sticky-top">
+            <div class="container-fluid">
+                <span class="navbar-brand">
+                    <i class="bi bi-beach" style="color: #FF9800;"></i> Strandkorb 26 Admin
+                </span>
+                <div class="ms-auto d-flex align-items-center gap-3">
+                    <span class="text-muted" id="userEmail"></span>
+                    <button class="btn btn-sm btn-outline-orange" onclick="signOut()">
                         <i class="bi bi-box-arrow-right"></i> Abmelden
                     </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Container -->
+        <div class="container-fluid container-main">
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#dashboard" role="tab">
+                        <i class="bi bi-graph-up"></i> Dashboard
+                    </a>
                 </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<!-- Login Container -->
-<div id="authContainer" class="auth-container" style="display: none;">
-    <div class="card login-card">
-        <div class="card-body p-5">
-            <h2 class="card-title text-center mb-4">
-                <i class="bi bi-umbrella"></i> Strandkorb Admin
-            </h2>
-            <form id="loginForm">
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Passwort</label>
-                    <input type="password" class="form-control" id="password" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Login</button>
-            </form>
-            <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Main Content -->
-<div id="mainContent" style="display: none;">
-    <div class="container-main">
-        <!-- Dashboard Header -->
-        <div class="row">
-            <div class="col-12">
-                <h1 class="text-white mb-4">
-                    <i class="bi bi-house-fill"></i> Dashboard
-                </h1>
-            </div>
-        </div>
-
-        <!-- Stats -->
-        <div class="row mb-4">
-            <div class="col-md-3 col-sm-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title text-muted">Aktive Buchungen</h6>
-                        <h3 id="activeContractsCount">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title text-muted">Gesamtumsatz</h6>
-                        <h3 id="totalRevenueCount">0€</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title text-muted">Benutzer</h6>
-                        <h3 id="usersCount">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title text-muted">Status</h6>
-                        <h3><span class="badge bg-success">Online</span></h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="card">
-            <ul class="nav nav-tabs" role="tablist" style="background: white; border-radius: 10px 10px 0 0; border: none; padding: 20px 20px 0 20px;">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="contractsTab" data-bs-toggle="tab" data-bs-target="#contractsContent" type="button">
-                        <i class="bi bi-list-check"></i> Buchungen
-                    </button>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#contracts" role="tab">
+                        <i class="bi bi-calendar-check"></i> Buchungen
+                    </a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pricesTab" data-bs-toggle="tab" data-bs-target="#pricesContent" type="button">
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#contracts2025" role="tab">
+                        <i class="bi bi-calendar-check"></i> Buchungen v2025
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#syncLogs" role="tab">
+                        <i class="bi bi-arrow-repeat"></i> Sync-Logs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#printLogs" role="tab">
+                        <i class="bi bi-printer"></i> Print-Logs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#prices" role="tab">
                         <i class="bi bi-tag"></i> Preise
-                    </button>
+                    </a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="chairsTab" data-bs-toggle="tab" data-bs-target="#chairsContent" type="button">
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#refund" role="tab">
+                        <i class="bi bi-cash-coin"></i> Rückerstattung
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#users" role="tab">
+                        <i class="bi bi-people"></i> Benutzer
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#devices" role="tab">
+                        <i class="bi bi-phone"></i> Geräte
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#chairs" role="tab">
                         <i class="bi bi-chair"></i> Körbe
-                    </button>
+                    </a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="statsTab" data-bs-toggle="tab" data-bs-target="#statsContent" type="button">
-                        <i class="bi bi-graph-up"></i> Statistiken
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="planTab" data-bs-toggle="tab" data-bs-target="#planContent" type="button">
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#plan" role="tab">
                         <i class="bi bi-map"></i> Plan
-                    </button>
+                    </a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="settingsTab" data-bs-toggle="tab" data-bs-target="#settingsContent" type="button">
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#settings" role="tab">
                         <i class="bi bi-gear"></i> Einstellungen
-                    </button>
+                    </a>
                 </li>
             </ul>
 
+            <!-- Tab Content -->
             <div class="tab-content">
-                <!-- Contracts Tab -->
-                <div class="tab-pane fade show active" id="contractsContent" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5>Alle Buchungen</h5>
-                        <button class="btn btn-success btn-sm" id="exportBtn" disabled>
-                            <i class="bi bi-download"></i> CSV Exportieren
-                        </button>
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-pane fade show active">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card stat-card">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Buchungen (Heute)</h6>
+                                    <h3 id="stat-today" style="color: #FF9800;">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stat-card">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Umsatz (Heute)</h6>
+                                    <h3 id="stat-revenue" style="color: #FF9800;">0€</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stat-card">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Aktive Benutzer</h6>
+                                    <h3 id="stat-users" style="color: #FF9800;">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stat-card">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Verbundene Geräte</h6>
+                                    <h3 id="stat-devices" style="color: #FF9800;">0</h3>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Stuhl</th>
-                                    <th>Von</th>
-                                    <th>Bis</th>
-                                    <th>Preis</th>
-                                    <th>Status</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody id="contractsTable">
-                                <tr>
-                                    <td colspan="7" class="text-center text-muted">Wird geladen...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Prices Tab -->
-                <div class="tab-pane fade" id="pricesContent" role="tabpanel">
-                    <h5 class="mb-3">💰 Preismanagement</h5>
-                    <div id="pricingTab"></div>
-                </div>
-
-                <!-- Chairs Tab -->
-                <div class="tab-pane fade" id="chairsContent" role="tabpanel">
-                    <h5 class="mb-3">Körbe verwalten</h5>
-                    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addChairModal">
-                        <i class="bi bi-plus"></i> Neuen Korb hinzufügen
-                    </button>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Typ</th>
-                                    <th>Status</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody id="chairsTable">
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted">Wird geladen...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Statistics Tab -->
-                <div class="tab-pane fade" id="statsContent" role="tabpanel">
-                    <h5 class="mb-4">Grafiken & Statistiken</h5>
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="card">
+                                <div class="card-header">Umsatz-Verlauf (7 Tage)</div>
                                 <div class="card-body">
                                     <canvas id="revenueChart"></canvas>
                                 </div>
@@ -380,92 +167,374 @@
                         </div>
                         <div class="col-lg-6">
                             <div class="card">
+                                <div class="card-header">Buchungstypen</div>
                                 <div class="card-body">
-                                    <canvas id="distributionChart" style="max-height: 300px;"></canvas>
+                                    <canvas id="typesChart"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Plan Tab -->
-                <div class="tab-pane fade" id="planContent" role="tabpanel">
-                    <h5 class="mb-4">Körbe-Plan (2-spaltig)</h5>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                <strong>Legende:</strong><br>
-                                <span class="badge" style="background-color: #ffff99; color: black;">mit "N"</span>
-                                <span class="badge" style="background-color: #ffdd44; color: black;">mit "L"</span>
-                                <span class="badge" style="background-color: #fff3cd; color: black;">Neue Körbe 2026</span>
-                                <span class="badge" style="background-color: #ffc107; color: black;">Komfort</span>
-                                <span class="badge" style="background-color: #f0f0f0; color: black;">Klassik</span>
-                                <span class="badge" style="background-color: #d4a5ff; color: black;">Vermietungswagen (VM)</span>
-                                <span class="badge" style="background-color: #ffcccc; color: black;">FKK</span>
-                                <span class="badge" style="background-color: #ccffcc; color: black;">Weg (Zugang)</span>
-                                <span class="badge" style="background-color: #e0e0e0; color: black;">Freifläche</span>
+                <!-- Contracts Tab -->
+                <div id="contracts" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Alle Buchungen</span>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-orange" onclick="exportCSV()">
+                                    <i class="bi bi-download"></i> CSV
+                                </button>
+                                <button class="btn btn-outline-orange" onclick="refreshContracts()">
+                                    <i class="bi bi-arrow-repeat"></i> Aktualisieren
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="contractsTable">
+                                    <thead>
+                                        <tr class="table-header-orange">
+                                            <th>ID</th>
+                                            <th>Korb</th>
+                                            <th>Kunde</th>
+                                            <th>Startzeit</th>
+                                            <th>Endzeit</th>
+                                            <th>Preis</th>
+                                            <th>Bezahlt</th>
+                                            <th>Status</th>
+                                            <th>Aktion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-                    <div id="chairGrid" class="chair-grid">
-                        <!-- Grid wird hier eingefügt -->
+                </div>
+
+                <!-- Contracts v2025 Tab -->
+                <div id="contracts2025" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <div><span id="contracts2025Title">Buchungen v2025 (QXyzCIkPR6TU2ZRPYAz1UKpotXz2)</span></div>
+                                <small class="text-muted" style="display: block; margin-top: 5px; font-weight: normal;">
+                                    ℹ️ Wenn alle Daten übertragen sind, wird dieser Tab entfernt. Dadurch lädt das Panel schneller.
+                                </small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-orange" onclick="exportCSV2025()">
+                                    <i class="bi bi-download"></i> CSV
+                                </button>
+                                <button class="btn btn-outline-orange" onclick="refreshContracts2025()">
+                                    <i class="bi bi-arrow-repeat"></i> Aktualisieren
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="contractsTable2025">
+                                    <thead>
+                                        <tr class="table-header-orange">
+                                            <th>Korb</th>
+                                            <th>Kunde</th>
+                                            <th>Startzeit</th>
+                                            <th>Endzeit</th>
+                                            <th>Preis</th>
+                                            <th>Bezahlt</th>
+                                            <th>Status</th>
+                                            <th>Aktion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sync Logs Tab -->
+                <div id="syncLogs" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Sync-Log Verlauf</span>
+                            <button class="btn btn-sm btn-outline-orange" onclick="refreshSyncLogs()">
+                                <i class="bi bi-arrow-repeat"></i> Aktualisieren
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="syncLogsTable">
+                                    <thead>
+                                        <tr class="table-header-orange">
+                                            <th>Benutzer</th>
+                                            <th>Kassierer</th>
+                                            <th>Zeit</th>
+                                            <th>Status</th>
+                                            <th>Fehlermeldung</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Logs Tab -->
+                <div id="printLogs" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Print-Log Verlauf</span>
+                            <button class="btn btn-sm btn-outline-orange" onclick="refreshPrintLogs()">
+                                <i class="bi bi-arrow-repeat"></i> Aktualisieren
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="printLogsTable">
+                                    <thead>
+                                        <tr class="table-header-orange">
+                                            <th>Benutzer</th>
+                                            <th>Kassierer</th>
+                                            <th>Zeit</th>
+                                            <th>Umsatz</th>
+                                            <th>Typ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prices Tab -->
+                <div id="prices" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">Preisblatt Management (25.04.2026)</div>
+                        <div class="card-body">
+                            <div class="row" id="pricesGrid"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Refund Config Tab -->
+                <div id="refund" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">Rückerstattung (v2026)</div>
+                        <div class="card-body" id="refundCard">
+                            <!-- Wird von loadRefundConfig() gefüllt -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="users" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Benutzer-Verwaltung</span>
+                            <button class="btn btn-sm btn-orange" data-bs-toggle="modal" data-bs-target="#userModal">
+                                <i class="bi bi-person-plus"></i> Neuer Benutzer
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="usersTable">
+                                    <thead>
+                                        <tr class="table-header-orange">
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>AppVersion</th>
+                                            <th>Aktion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Devices Tab -->
+                <div id="devices" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">Verbundene Geräte</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="devicesTable">
+                                    <thead>
+                                        <tr class="table-header-orange">
+                                            <th>Geräte-Name</th>
+                                            <th>Seriennummer</th>
+                                            <th>Benutzer</th>
+                                            <th>Letzte Sync Zeit</th>
+                                            <th>Sync-Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chairs Tab -->
+                <div id="chairs" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">Körbe verwalten</div>
+                        <div class="card-body">
+                            <button class="btn btn-orange mb-3" data-bs-toggle="modal" data-bs-target="#addChairModal">
+                                <i class="bi bi-plus"></i> Neuen Korb hinzufügen
+                            </button>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-header-orange">
+                                    <thead>
+                                        <tr>
+                                            <th>Position</th>
+                                            <th>Name</th>
+                                            <th>Typ</th>
+                                            <th>Aktion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="chairsTable">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">Wird geladen...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Tab -->
+                <div id="plan" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">Körbe-Plan (2-spaltig)</div>
+                        <div class="card-body">
+                            <div class="alert alert-info mb-3">
+                                <strong>Legende:</strong><br>
+                                <span class="badge" style="background-color: #ffc107; color: black;">KOMFORT</span>
+                                <span class="badge" style="background-color: #ffffff; border: 1px solid #999; color: black;">KLASSIK</span>
+                                <span class="badge" style="background-color: #e0e0e0; color: black;">Freifläche</span>
+                                <span class="badge" style="background-color: #ccffcc; color: black;">Zugang</span>
+                            </div>
+                            <div id="chairGrid" class="chair-grid"></div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Settings Tab -->
-                <div class="tab-pane fade" id="settingsContent" role="tabpanel">
-                    <h5 class="mb-4">⚙️ Geschäftsregeln & Einstellungen</h5>
-                    <div id="settingsContainer">
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> Einstellungen werden geladen...
+                <div id="settings" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">App-Einstellungen</div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">App-Name</label>
+                                        <input type="text" class="form-control" id="appName" value="Strandkorb 26">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">App-Version</label>
+                                        <input type="text" class="form-control" id="appVersion" value="1.0">
+                                    </div>
+                                    <button class="btn btn-orange" onclick="updateSettings()">
+                                        <i class="bi bi-check"></i> Speichern
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">System-Informationen</div>
+                                <div class="card-body">
+                                    <p><strong>Firebase Projekt:</strong> <span id="fbProject">-</span></p>
+                                    <p><strong>Datenbank-Version:</strong> <span id="dbVersion">9</span></p>
+                                    <p><strong>Shared UID:</strong><br><code style="font-size: 0.8rem;">dGC8miw2hybTvMHVGvQcc2lCfZH3</code></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Add Chair Modal -->
-<div class="modal fade" id="addChairModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Neuen Korb hinzufügen</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Add Chair Modal -->
+    <div class="modal fade" id="addChairModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-orange text-white">
+                    <h5 class="modal-title">Neuen Korb hinzufügen</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addChairForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="chairName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Typ</label>
+                            <select class="form-select" id="chairType" required>
+                                <option value="">Wähle einen Typ</option>
+                                <option value="KOMFORT">KOMFORT</option>
+                                <option value="KLASSIK">KLASSIK</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="submit" class="btn btn-orange">Hinzufügen</button>
+                    </div>
+                </form>
             </div>
-            <form id="addChairForm">
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-orange text-white">
+                    <h5 class="modal-title">Neuer Benutzer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Name</label>
-                        <input type="text" class="form-control" name="name" required>
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="newUserEmail">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Typ</label>
-                        <select class="form-control" name="type" required>
-                            <option value="">Wähle einen Typ</option>
-                            <option value="KOMFORT">KOMFORT</option>
-                            <option value="KLASSIK">KLASSIK</option>
-                            <option value="L_KORB">L-KORB</option>
+                        <label class="form-label">Passwort</label>
+                        <input type="password" class="form-control" id="newUserPassword">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">AppVersion</label>
+                        <select class="form-select" id="newUserAppVersion">
+                            <option value="new">Neu (Shared UID)</option>
+                            <option value="2025">Alt (2025er App)</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-                    <button type="submit" class="btn btn-primary">Hinzufügen</button>
+                    <button type="button" class="btn btn-orange" onclick="createUser()">Erstellen</button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="app-fixed.js"></script>
-
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

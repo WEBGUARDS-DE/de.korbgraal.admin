@@ -1,0 +1,539 @@
+/* ==================== COLOR SCHEME ==================== */
+:root {
+    --primary-orange: #FF9800;
+    --dark-orange: #FF6F00;
+    --light-orange: #FFAB40;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --bg-light: #f8f9fa;
+    --border-color: #dee2e6;
+}
+
+/* ==================== GENERAL STYLES ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+/* ==================== AUTH CONTAINER ==================== */
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--primary-orange) 0%, var(--light-orange) 100%);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+}
+
+.login-card .card-body {
+    background: white;
+    border-radius: 12px;
+}
+
+.login-card form input {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 1rem;
+}
+
+.login-card form input:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.25);
+}
+
+/* ==================== NAVBAR ==================== */
+nav {
+    background: white;
+    border-bottom: 2px solid var(--primary-orange);
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav .navbar-brand {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ==================== CONTAINER ==================== */
+.container-main {
+    padding: 2rem 0;
+    max-width: 1400px;
+}
+
+/* ==================== BUTTONS ==================== */
+.btn-orange {
+    background-color: var(--primary-orange);
+    border-color: var(--primary-orange);
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+}
+
+.btn-orange:hover {
+    background-color: var(--dark-orange);
+    border-color: var(--dark-orange);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.btn-outline-orange {
+    color: var(--primary-orange);
+    border-color: var(--primary-orange);
+    background-color: transparent;
+}
+
+.btn-outline-orange:hover {
+    background-color: var(--primary-orange);
+    color: white;
+    border-color: var(--primary-orange);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* ==================== TABS ==================== */
+.nav-tabs {
+    border-bottom: 2px solid var(--border-color);
+    gap: 0.5rem;
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--primary-orange);
+    border-bottom-color: rgba(255, 152, 0, 0.3);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-orange);
+    border-bottom-color: var(--primary-orange);
+    background-color: transparent;
+}
+
+/* ==================== CARDS ==================== */
+.card {
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    background-color: var(--bg-light);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-dark);
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* ==================== STAT CARDS ==================== */
+.stat-card {
+    border-left: 4px solid var(--primary-orange);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(255, 152, 0, 0.2);
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+}
+
+.stat-card .text-muted {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ==================== TABLES ==================== */
+.table {
+    margin-bottom: 0;
+}
+
+.table-header-orange thead tr {
+    background-color: var(--light-orange);
+    color: white;
+}
+
+.table-header-orange thead th {
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 0.75rem;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 152, 0, 0.05);
+}
+
+.table td {
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+.table-responsive {
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* ==================== BADGES ==================== */
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000;
+}
+
+.badge.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+/* ==================== FORMS ==================== */
+.form-control, .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 0.35rem;
+}
+
+.input-group-text {
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+/* ==================== MODALS ==================== */
+.modal-content {
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 2px solid var(--border-color);
+}
+
+.bg-orange {
+    background-color: var(--primary-orange) !important;
+}
+
+.text-orange {
+    color: var(--primary-orange);
+}
+
+.btn-close-white {
+    filter: invert(1) brightness(1.2);
+}
+
+/* ==================== ALERTS ==================== */
+.alert {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    color: #856404;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+/* ==================== CHARTS ==================== */
+.card canvas {
+    max-height: 300px;
+}
+
+/* ==================== BADGES & STATUS ==================== */
+.badge-success {
+    background-color: #28a745;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-dark {
+    color: var(--text-dark) !important;
+}
+
+.bg-light {
+    background-color: var(--bg-light) !important;
+}
+
+.border {
+    border-color: var(--border-color) !important;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+    .container-main {
+        padding: 1rem 0;
+    }
+
+    .nav-tabs {
+        flex-wrap: wrap;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .login-card {
+        max-width: 90%;
+    }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card, .stat-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.tab-pane {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ==================== SCROLLBAR ==================== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-orange);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-orange);
+}
+
+/* ==================== PRICE GRID ==================== */
+#pricesGrid .col-md-6 {
+    margin-bottom: 1rem;
+}
+
+.price-input {
+    max-width: 80px;
+}
+
+/* ==================== CHAIR GRID ==================== */
+.chair-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 20px 0;
+}
+
+.chair-card {
+    padding: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid #ddd;
+    text-align: center;
+    user-select: none;
+}
+
+.chair-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.chair-card.komfort {
+    background-color: #ffc107;
+    border-color: #ff9800;
+    color: black;
+}
+
+.chair-card.klassik {
+    background-color: #ffffff;
+    border-color: #999;
+    color: black;
+}
+
+.chair-card.freiflaehe {
+    background-color: #e0e0e0;
+    border-color: #999;
+    border-style: dotted;
+    border-width: 2px;
+    color: #666;
+    opacity: 0.6;
+}
+
+.chair-card.zugang {
+    background-color: #ccffcc;
+    border-color: #66cc66;
+    color: black;
+}
+
+.chair-position {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    opacity: 0.7;
+}
+
+.chair-name {
+    font-size: 18px;
+    font-weight: bold;
+    word-break: break-word;
+}
+
+.chair-type {
+    font-size: 11px;
+    margin-top: 8px;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .chair-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+    nav, .btn, .form-control {
+        display: none;
+    }
+
+    .table {
+        font-size: 0.9rem;
+    }
+
+    .card {
+        page-break-inside: avoid;
+    }
+}
