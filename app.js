@@ -681,91 +681,87 @@ async function refreshPrintLogs() {
 async function loadPrices() {
     try {
         const pricesGrid = document.getElementById('pricesGrid');
-        console.log("📍 Lade Preise von Firebase /prices/v2026/...");
+        console.log("📍 Lade Preise von Firebase /prices/KLASSIK, /prices/KOMFORT");
 
-        // Load prices from Firebase v2026 (neue Struktur)
         const firebasePrices = {};
 
+        // Lade direkt aus /prices/{category}
         for (const category of ['KLASSIK', 'KOMFORT']) {
             try {
-                const priceDoc = await db.collection('prices').doc('v2026').collection(category).doc(category).get();
+                const priceDoc = await db.collection('prices').doc(category).get();
                 if (priceDoc.exists) {
                     const data = priceDoc.data();
-                    // Nutze nur die durations Sub-Map (filtere Metadaten)
+                    // Extrahiere durations Map
                     if (data.durations && typeof data.durations === 'object') {
                         firebasePrices[category] = data.durations;
-                        console.log(`✅ ${category} geladen (durations):`, data.durations);
+                        console.log(`✅ ${category} geladen:`, data.durations);
                     } else {
+                        console.warn(`⚠️ ${category} hat keine durations Map`);
                         firebasePrices[category] = data;
-                        console.log(`✅ ${category} geladen (fallback):`, data);
                     }
+                } else {
+                    console.warn(`⚠️ ${category} Dokument nicht gefunden`);
                 }
             } catch (e) {
-                console.warn(`⚠️ ${category} nicht gefunden, nutze Defaults:`, e.message);
+                console.warn(`⚠️ ${category} Fehler:`, e.message);
             }
         }
 
-        // Use Firebase prices or fallback to defaults
         const pricesToDisplay = Object.keys(firebasePrices).length > 0 ? firebasePrices : PRICES;
 
         let html = '';
 
-        for (const [category, pricesObj] of Object.entries(pricesToDisplay)) {
+        // Render beide Kategorien
+        for (const [category, priceObj] of Object.entries(pricesToDisplay)) {
+            if (!priceObj || typeof priceObj !== 'object') continue;
+
             html += `<div class="col-md-6 mb-4">
                 <div class="card">
-                    <div class="card-header"><strong>${category}</strong> - v2026</div>
+                    <div class="card-header"><strong>${category}</strong> Preise</div>
                     <div class="card-body">`;
 
-            // Flatten die komplexe Struktur für die UI
-            const flatPrices = [];
+            // Render alle Durationen aus der Map
+            const DURATION_LABELS = {
+                '1': '1 Stunde',
+                '2': '2 Stunden',
+                '3': '3 Stunden',
+                '-1': 'Halber Tag (6h)',
+                '24': '1 Tag',
+                '48': '2 Tage',
+                '72': '3 Tage',
+                '96': '4 Tage',
+                '120': '5 Tage',
+                '144': '6 Tage',
+                '168': '7 Tage',
+                '336': '14 Tage',
+                '-2': 'Zusatztag',
+                '-3': '1 Monat'
+            };
 
-            // Top-Level numerische Werte
-            if (pricesObj['1h'] !== undefined) flatPrices.push({ key: '1h', label: '1 Stunde', value: pricesObj['1h'] });
-
-            // halfDay mit before/after
-            if (pricesObj['halfDay'] && typeof pricesObj['halfDay'] === 'object') {
-                if (pricesObj['halfDay'].before) flatPrices.push({ key: 'halfDay.before', label: 'Halber Tag - vor Cutoff', value: pricesObj['halfDay'].before });
-                if (pricesObj['halfDay'].after) flatPrices.push({ key: 'halfDay.after', label: 'Halber Tag - nach Cutoff', value: pricesObj['halfDay'].after });
-            }
-
-            // Days flach machen
-            if (pricesObj['days'] && typeof pricesObj['days'] === 'object') {
-                for (const [dayKey, dayPrice] of Object.entries(pricesObj['days'])) {
-                    const dayNum = parseInt(dayKey);
-                    if (!isNaN(dayNum)) {
-                        const dayLabel = dayNum === 1 ? '1 Tag' : `${dayNum} Tage`;
-                        flatPrices.push({ key: `days.${dayKey}`, label: dayLabel, value: dayPrice });
-                    }
-                }
-            }
-
-            // Additional Day
-            if (pricesObj['additionalDay'] !== undefined) flatPrices.push({ key: 'additionalDay', label: 'Zusatztag', value: pricesObj['additionalDay'] });
-
-            // One Month
-            if (pricesObj['oneMonth'] !== undefined) flatPrices.push({ key: 'oneMonth', label: '1 Monat', value: pricesObj['oneMonth'] });
-
-            // Render alle Preise
-            for (const item of flatPrices) {
-                html += `
-                    <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <label><small>${item.label}</small></label>
-                        <div class="input-group input-group-sm" style="width: 120px;">
-                            <input type="number" class="form-control price-input"
-                                   data-category="${category}" data-key="${item.key}" value="${item.value}">
-                            <span class="input-group-text">€</span>
+            for (const [duration, price] of Object.entries(priceObj)) {
+                const label = DURATION_LABELS[duration] || `${duration}h`;
+                if (typeof price === 'number') {
+                    html += `
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <label><small>${label}</small></label>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control price-input"
+                                       data-category="${category}" data-duration="${duration}" 
+                                       value="${price}" step="0.01">
+                                <span class="input-group-text">€</span>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
 
             html += `</div></div></div>`;
         }
 
         pricesGrid.innerHTML = html;
-        console.log("✅ Preise v2026 geladen:", pricesToDisplay);
+        console.log("✅ Preise geladen");
 
-        // Add update listener
+        // Add listeners
         document.querySelectorAll('.price-input').forEach(input => {
             input.addEventListener('change', updatePrice);
         });
@@ -777,64 +773,60 @@ async function loadPrices() {
 
 async function updatePrice(e) {
     const category = e.target.dataset.category;
-    const key = e.target.dataset.key;
+    const duration = e.target.dataset.duration;
     const value = parseFloat(e.target.value);
 
     if (!isNaN(value) && value >= 0) {
-        PRICES[category][key] = value;
-
         try {
-            // Speichere in /prices/v2026/{category}/{category}
+            // Speichere in /prices/{category}/durations/{duration}
             await db.collection('prices')
-                .doc('v2026')
-                .collection(category)
                 .doc(category)
-                .set({
-                    [key]: value
-                }, { merge: true });
+                .update({
+                    [`durations.${duration}`]: value,
+                    'lastUpdated': new Date()
+                });
 
-            showToast(`✅ Preis ${PRICE_LABELS[key]} = ${value}€ gespeichert!`, 'success');
-            console.log(`📍 Preis aktualisiert: /prices/v2026/${category}/${category}.${key} = ${value}`);
+            showToast(`✅ ${category} ${duration}h = ${value}€ gespeichert!`, 'success');
+            console.log(`✅ Preis gespeichert: /prices/${category}/durations/${duration} = ${value}`);
         } catch (error) {
-            alert('Fehler beim Speichern: ' + error.message);
+            alert('Fehler: ' + error.message);
             console.error('Update Price Error:', error);
         }
     }
 }
 
-// ==================== REFUND CONFIG ====================
+
 async function loadRefundConfig() {
     try {
-        console.log("📍 Lade Refund-Preise von /refund-prices/v2026/...");
+        console.log("📍 Lade Refund-Config von /refund-prices/KLASSIK, KOMFORT");
 
-        // Lade Refund-Preise (mit Default-Werten, kein Blockieren)
-        const refundConfig = {
-            KLASSIK: {
-                grace_period_minutes: 15,
-                one_hour_full_refund: 10,
-                one_hour_half_refund: 5
-            },
-            KOMFORT: {
-                grace_period_minutes: 15,
-                one_hour_full_refund: 11,
-                one_hour_half_refund: 6
-            }
-        };
+        const refundConfig = {};
 
-        // Versuche von Firebase zu laden (non-blocking)
+        // Lade direkt aus /refund-prices/{category}
         for (const category of ['KLASSIK', 'KOMFORT']) {
             try {
-                const refundDoc = await db.collection('refund-prices').doc('v2026').collection(category).doc(category).get();
+                const refundDoc = await db.collection('refund-prices').doc(category).get();
                 if (refundDoc.exists) {
-                    refundConfig[category] = refundDoc.data();
-                    console.log(`✅ ${category} geladen:`, refundDoc.data());
+                    const data = refundDoc.data();
+                    refundConfig[category] = {
+                        grace_period_minutes: data.grace_period_minutes || 15,
+                        one_hour_full_refund: data.one_hour_full_refund || 10,
+                        one_hour_half_refund: data.one_hour_half_refund || 6
+                    };
+                    console.log(`✅ ${category} geladen:`, refundConfig[category]);
+                } else {
+                    console.warn(`⚠️ ${category} Dokument nicht gefunden, nutze Defaults`);
+                    refundConfig[category] = {
+                        grace_period_minutes: 15,
+                        one_hour_full_refund: category === 'KLASSIK' ? 10 : 11,
+                        one_hour_half_refund: category === 'KLASSIK' ? 6 : 7
+                    };
                 }
             } catch (e) {
-                console.warn(`⚠️ ${category} nicht geladen, nutze Defaults:`, e.message);
+                console.warn(`⚠️ ${category} Fehler:`, e.message);
             }
         }
 
-        // Render UI mit geladenen Daten
         renderRefundConfig(refundConfig);
 
     } catch (error) {
@@ -852,25 +844,25 @@ function renderRefundConfig(config) {
         html += `
             <div class="col-md-6 mb-4">
                 <div class="card">
-                    <div class="card-header"><strong>${category}</strong></div>
+                    <div class="card-header"><strong>${category}</strong> Rückerstattungen</div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label">Karenz-Zeit (Minuten)</label>
+                            <label class="form-label">Karenzzeit (Minuten)</label>
                             <input type="number" class="form-control refund-input"
                                    data-category="${category}" data-key="grace_period_minutes"
-                                   value="${values.grace_period_minutes || 15}">
+                                   value="${values.grace_period_minutes || 15}" min="0" max="60">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Erstattung nach 1h (€)</label>
+                            <label class="form-label">Volle Erstattung (€)</label>
                             <input type="number" class="form-control refund-input"
                                    data-category="${category}" data-key="one_hour_full_refund"
-                                   value="${values.one_hour_full_refund || 10}" step="0.01">
+                                   value="${values.one_hour_full_refund || 10}" step="0.01" min="0">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Erstattung nach 2h (€)</label>
+                            <label class="form-label">Halbe Erstattung (€)</label>
                             <input type="number" class="form-control refund-input"
                                    data-category="${category}" data-key="one_hour_half_refund"
-                                   value="${values.one_hour_half_refund || 5}" step="0.01">
+                                   value="${values.one_hour_half_refund || 6}" step="0.01" min="0">
                         </div>
                     </div>
                 </div>
@@ -879,19 +871,19 @@ function renderRefundConfig(config) {
     }
 
     html += '</div>';
-    html += '<button class="btn btn-orange" onclick="updateRefundConfig()">✅ Alle Erstattungen speichern</button>';
+    html += '<button class="btn btn-orange" onclick="updateRefundConfig()">✅ Speichern</button>';
 
     refundCard.innerHTML = html;
 }
 
 async function updateRefundConfig() {
     try {
-        console.log("📍 Speichere Refund-Preise...");
+        console.log("📍 Speichere Refund-Config...");
 
         const inputs = document.querySelectorAll('.refund-input');
         const updates = {};
 
-        // Sammle alle Änderungen pro Kategorie
+        // Sammle Änderungen pro Kategorie
         for (const input of inputs) {
             const category = input.dataset.category;
             const key = input.dataset.key;
@@ -906,21 +898,22 @@ async function updateRefundConfig() {
         // Speichere für jede Kategorie
         for (const [category, values] of Object.entries(updates)) {
             await db.collection('refund-prices')
-                .doc('v2026')
-                .collection(category)
                 .doc(category)
-                .set(values, { merge: true });
+                .set({
+                    ...values,
+                    lastUpdated: new Date()
+                }, { merge: true });
             console.log(`✅ ${category} gespeichert:`, values);
         }
 
-        showToast('✅ Alle Erstattungsbeträge gespeichert!', 'success');
+        showToast('✅ Alle Rückerstattungen gespeichert!', 'success');
     } catch (error) {
         alert('Fehler: ' + error.message);
         console.error('Update error:', error);
     }
 }
 
-// ==================== USERS ====================
+
 async function loadUsers() {
     try {
         const usersRef = db.collection('users');
