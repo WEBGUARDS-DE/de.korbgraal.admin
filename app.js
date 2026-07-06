@@ -681,7 +681,7 @@ async function refreshPrintLogs() {
 async function loadPrices() {
     try {
         const pricesGrid = document.getElementById('pricesGrid');
-        console.log("📍 Lade Preise von Firebase /prices/KLASSIK, /prices/KOMFORT");
+        console.log("📍 Lade Preise von /prices/KLASSIK und /prices/KOMFORT");
 
         const firebasePrices = {};
 
@@ -691,36 +691,44 @@ async function loadPrices() {
                 const priceDoc = await db.collection('prices').doc(category).get();
                 if (priceDoc.exists) {
                     const data = priceDoc.data();
-                    // Extrahiere durations Map
+                    console.log(`📍 ${category} raw data:`, data);
+                    
+                    // Prüfe ob durations existiert
                     if (data.durations && typeof data.durations === 'object') {
                         firebasePrices[category] = data.durations;
-                        console.log(`✅ ${category} geladen:`, data.durations);
+                        console.log(`✅ ${category} durations geladen:`, data.durations);
                     } else {
-                        console.warn(`⚠️ ${category} hat keine durations Map`);
+                        console.warn(`⚠️ ${category} hat keine durations Map, versuche Fallback`);
                         firebasePrices[category] = data;
                     }
                 } else {
-                    console.warn(`⚠️ ${category} Dokument nicht gefunden`);
+                    console.error(`❌ ${category} Dokument existiert nicht in Firestore!`);
                 }
             } catch (e) {
-                console.warn(`⚠️ ${category} Fehler:`, e.message);
+                console.error(`❌ ${category} Fehler beim Laden:`, e.message);
             }
         }
 
+        console.log("📍 firebasePrices:", firebasePrices);
         const pricesToDisplay = Object.keys(firebasePrices).length > 0 ? firebasePrices : PRICES;
+        console.log("📍 pricesToDisplay:", pricesToDisplay);
 
         let html = '';
 
         // Render beide Kategorien
         for (const [category, priceObj] of Object.entries(pricesToDisplay)) {
-            if (!priceObj || typeof priceObj !== 'object') continue;
+            console.log(`📍 Rendering ${category}:`, priceObj);
+            
+            if (!priceObj || typeof priceObj !== 'object') {
+                console.warn(`⚠️ ${category} ist nicht ein Object:`, priceObj);
+                continue;
+            }
 
             html += `<div class="col-md-6 mb-4">
                 <div class="card">
                     <div class="card-header"><strong>${category}</strong> Preise</div>
                     <div class="card-body">`;
 
-            // Render alle Durationen aus der Map
             const DURATION_LABELS = {
                 '1': '1 Stunde',
                 '2': '2 Stunden',
@@ -738,15 +746,17 @@ async function loadPrices() {
                 '-3': '1 Monat'
             };
 
-            for (const [duration, price] of Object.entries(priceObj)) {
-                const label = DURATION_LABELS[duration] || `${duration}h`;
+            // Nur numerische Felder rendern
+            for (const [key, price] of Object.entries(priceObj)) {
                 if (typeof price === 'number') {
+                    const label = DURATION_LABELS[key] || `${key}h`;
+                    console.log(`  + ${key}: ${price}€`);
                     html += `
                         <div class="mb-2 d-flex justify-content-between align-items-center">
                             <label><small>${label}</small></label>
                             <div class="input-group input-group-sm" style="width: 120px;">
                                 <input type="number" class="form-control price-input"
-                                       data-category="${category}" data-duration="${duration}" 
+                                       data-category="${category}" data-duration="${key}" 
                                        value="${price}" step="0.01">
                                 <span class="input-group-text">€</span>
                             </div>
@@ -759,7 +769,7 @@ async function loadPrices() {
         }
 
         pricesGrid.innerHTML = html;
-        console.log("✅ Preise geladen");
+        console.log("✅ Preisblatt HTML gerendert");
 
         // Add listeners
         document.querySelectorAll('.price-input').forEach(input => {
@@ -767,7 +777,8 @@ async function loadPrices() {
         });
 
     } catch (error) {
-        console.error('Prices load error:', error);
+        console.error('❌ Prices load error:', error);
+        alert('Fehler beim Laden der Preise: ' + error.message);
     }
 }
 
@@ -778,6 +789,8 @@ async function updatePrice(e) {
 
     if (!isNaN(value) && value >= 0) {
         try {
+            console.log(`📍 Speichere /prices/${category}/durations/${duration} = ${value}`);
+            
             // Speichere in /prices/{category}/durations/{duration}
             await db.collection('prices')
                 .doc(category)
@@ -787,22 +800,15 @@ async function updatePrice(e) {
                 });
 
             showToast(`✅ ${category} ${duration}h = ${value}€ gespeichert!`, 'success');
-            console.log(`✅ Preis gespeichert: /prices/${category}/durations/${duration} = ${value}`);
+            console.log(`✅ Preis gespeichert`);
         } catch (error) {
+            console.error('❌ Update Price Error:', error.message);
             alert('Fehler: ' + error.message);
-            console.error('Update Price Error:', error);
         }
     }
 }
 
 
-async function loadRefundConfig() {
-    try {
-        console.log("📍 Lade Refund-Config von /refund-prices/KLASSIK, KOMFORT");
-
-        const refundConfig = {};
-
-        // Lade direkt aus /refund-prices/{category}
         for (const category of ['KLASSIK', 'KOMFORT']) {
             try {
                 const refundDoc = await db.collection('refund-prices').doc(category).get();
