@@ -1285,9 +1285,18 @@ async function loadCategories() {
 function renderCategories(categories) {
     const tbody = document.querySelector('#categoriesTable');
     
-    // Sortiere nach numerischen Keys
+    // Sortiere Keys numerisch (1, 2, 10, 11, 100, 111)
     const sorted = Object.entries(categories)
-        .sort(([keyA], [keyB]) => parseInt(keyA) - parseInt(keyB));
+        .sort(([keyA], [keyB]) => {
+            const numA = parseInt(keyA);
+            const numB = parseInt(keyB);
+            // Wenn beide Nummern, numerisch sortieren
+            if (!isNaN(numA) && !isNaN(numB)) {
+                return numA - numB;
+            }
+            // Sonst alphabetisch
+            return keyA.localeCompare(keyB);
+        });
     
     if (sorted.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Keine Kategorien vorhanden</td></tr>';
@@ -1301,7 +1310,7 @@ function renderCategories(categories) {
                 <td><strong>${index}</strong></td>
                 <td>${name}</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('${name}')">
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('${index}')">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
@@ -1329,9 +1338,13 @@ async function addCategory() {
         
         const categories = doc.exists ? doc.data() : {};
         
-        // Finde nächste Nummer
-        const keys = Object.keys(categories).map(k => parseInt(k));
-        const nextIndex = keys.length > 0 ? Math.max(...keys) + 1 : 0;
+        // Finde nächste numerische Position
+        const numKeys = Object.keys(categories)
+            .map(k => parseInt(k))
+            .filter(n => !isNaN(n))
+            .sort((a, b) => a - b);
+        
+        const nextIndex = numKeys.length > 0 ? Math.max(...numKeys) + 1 : 1;
         
         categories[nextIndex.toString()] = name;
         
@@ -1340,18 +1353,18 @@ async function addCategory() {
         input.value = '';
         await loadCategories();
         
-        console.log("✅ Kategorie hinzugefügt");
+        console.log("✅ Kategorie hinzugefügt an Position", nextIndex);
     } catch (error) {
         console.error('Add category error:', error);
         alert('Fehler beim Hinzufügen');
     }
 }
 
-async function deleteCategory(name) {
-    if (!confirm(`Kategorie "${name}" wirklich löschen?`)) return;
+async function deleteCategory(key) {
+    if (!confirm(`Position "${key}" wirklich löschen?`)) return;
     
     try {
-        console.log("📍 Lösche Kategorie:", name);
+        console.log("📍 Lösche Position:", key);
         
         const categoryRef = db.collection('chairCategory').doc('Category');
         const doc = await categoryRef.get();
@@ -1360,27 +1373,13 @@ async function deleteCategory(name) {
         
         const categories = doc.data();
         
-        // Finde und lösche
-        for (const [key, value] of Object.entries(categories)) {
-            if (value === name) {
-                delete categories[key];
-                break;
-            }
-        }
+        // Lösche den Key
+        delete categories[key];
         
-        // Renummeriere: 0, 1, 2, ... (keine Lücken)
-        const sorted = Object.entries(categories)
-            .sort(([keyA], [keyB]) => parseInt(keyA) - parseInt(keyB));
-        
-        const newCategories = {};
-        sorted.forEach(([_, value], index) => {
-            newCategories[index.toString()] = value;
-        });
-        
-        await categoryRef.set(newCategories);
+        await categoryRef.set(categories);
         await loadCategories();
         
-        console.log("✅ Kategorie gelöscht, renummeriert");
+        console.log("✅ Position gelöscht");
     } catch (error) {
         console.error('Delete category error:', error);
         alert('Fehler beim Löschen');
