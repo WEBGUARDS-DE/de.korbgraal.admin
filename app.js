@@ -692,15 +692,8 @@ async function loadPrices() {
                 if (priceDoc.exists) {
                     const data = priceDoc.data();
                     console.log(`📍 ${category} raw data:`, data);
-                    
-                    // Prüfe ob durations existiert
-                    if (data.durations && typeof data.durations === 'object') {
-                        firebasePrices[category] = data.durations;
-                        console.log(`✅ ${category} durations geladen:`, data.durations);
-                    } else {
-                        console.warn(`⚠️ ${category} hat keine durations Map, versuche Fallback`);
-                        firebasePrices[category] = data;
-                    }
+                    firebasePrices[category] = data;
+                    console.log(`✅ ${category} komplett geladen`);
                 } else {
                     console.error(`❌ ${category} Dokument existiert nicht in Firestore!`);
                 }
@@ -711,16 +704,15 @@ async function loadPrices() {
 
         console.log("📍 firebasePrices:", firebasePrices);
         const pricesToDisplay = Object.keys(firebasePrices).length > 0 ? firebasePrices : PRICES;
-        console.log("📍 pricesToDisplay:", pricesToDisplay);
 
         let html = '';
 
         // Render beide Kategorien
-        for (const [category, priceObj] of Object.entries(pricesToDisplay)) {
-            console.log(`📍 Rendering ${category}:`, priceObj);
+        for (const [category, data] of Object.entries(pricesToDisplay)) {
+            console.log(`📍 Rendering ${category}:`, data);
             
-            if (!priceObj || typeof priceObj !== 'object') {
-                console.warn(`⚠️ ${category} ist nicht ein Object:`, priceObj);
+            if (!data || typeof data !== 'object') {
+                console.warn(`⚠️ ${category} ist nicht ein Object`);
                 continue;
             }
 
@@ -746,19 +738,72 @@ async function loadPrices() {
                 '-3': '1 Monat'
             };
 
-            // Nur numerische Felder rendern
-            for (const [key, price] of Object.entries(priceObj)) {
-                if (typeof price === 'number') {
-                    const label = DURATION_LABELS[key] || `${key}h`;
-                    console.log(`  + ${key}: ${price}€`);
+            // ===== DURATIONS (numerische Preise) =====
+            if (data.durations && typeof data.durations === 'object') {
+                console.log(`  Durations gefunden:`, data.durations);
+                for (const [key, price] of Object.entries(data.durations)) {
+                    if (typeof price === 'number') {
+                        const label = DURATION_LABELS[key] || `${key}h`;
+                        html += `
+                            <div class="mb-2 d-flex justify-content-between align-items-center">
+                                <label><small>${label}</small></label>
+                                <div class="input-group input-group-sm" style="width: 120px;">
+                                    <input type="number" class="form-control price-input"
+                                           data-category="${category}" data-duration="${key}" 
+                                           value="${price}" step="0.01">
+                                    <span class="input-group-text">€</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            // ===== HALBTAG-STAFFEL (6 = vor/nach cutoffHour) =====
+            if (data['6'] && typeof data['6'] === 'object') {
+                console.log(`  Halbtag-Staffel gefunden:`, data['6']);
+                const halfday = data['6'];
+                
+                html += `<hr class="my-3">
+                    <small class="text-muted"><strong>Halbtag-Staffel (ab ${halfday.cutoffHour || 16} Uhr)</strong></small><br>`;
+                
+                if (typeof halfday.before === 'number') {
                     html += `
                         <div class="mb-2 d-flex justify-content-between align-items-center">
-                            <label><small>${label}</small></label>
+                            <label><small>Vor ${halfday.cutoffHour || 16} Uhr</small></label>
                             <div class="input-group input-group-sm" style="width: 120px;">
                                 <input type="number" class="form-control price-input"
-                                       data-category="${category}" data-duration="${key}" 
-                                       value="${price}" step="0.01">
+                                       data-category="${category}" data-key="6.before" 
+                                       value="${halfday.before}" step="0.01">
                                 <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (typeof halfday.after === 'number') {
+                    html += `
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <label><small>Ab ${halfday.cutoffHour || 16} Uhr</small></label>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control price-input"
+                                       data-category="${category}" data-key="6.after" 
+                                       value="${halfday.after}" step="0.01">
+                                <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (typeof halfday.cutoffHour === 'number') {
+                    html += `
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <label><small>Cutoff Hour</small></label>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control price-input"
+                                       data-category="${category}" data-key="6.cutoffHour" 
+                                       value="${halfday.cutoffHour}" min="0" max="23">
+                                <span class="input-group-text">h</span>
                             </div>
                         </div>
                     `;
@@ -784,22 +829,33 @@ async function loadPrices() {
 
 async function updatePrice(e) {
     const category = e.target.dataset.category;
-    const duration = e.target.dataset.duration;
+    let key = e.target.dataset.duration || e.target.dataset.key;
     const value = parseFloat(e.target.value);
 
     if (!isNaN(value) && value >= 0) {
         try {
-            console.log(`📍 Speichere /prices/${category}/durations/${duration} = ${value}`);
+            console.log(`📍 Speichere /prices/${category}/${key} = ${value}`);
             
-            // Speichere in /prices/{category}/durations/{duration}
-            await db.collection('prices')
-                .doc(category)
-                .update({
-                    [`durations.${duration}`]: value,
-                    'lastUpdated': new Date()
-                });
+            // Unterscheide zwischen duration und nested keys (6.before, 6.after, etc)
+            if (key.includes('.')) {
+                // Nested: 6.before → update '6.before'
+                await db.collection('prices')
+                    .doc(category)
+                    .update({
+                        [key]: value,
+                        'lastUpdated': new Date()
+                    });
+            } else {
+                // Simple duration: durations.{key}
+                await db.collection('prices')
+                    .doc(category)
+                    .update({
+                        [`durations.${key}`]: value,
+                        'lastUpdated': new Date()
+                    });
+            }
 
-            showToast(`✅ ${category} ${duration}h = ${value}€ gespeichert!`, 'success');
+            showToast(`✅ ${category} ${key} = ${value} gespeichert!`, 'success');
             console.log(`✅ Preis gespeichert`);
         } catch (error) {
             console.error('❌ Update Price Error:', error.message);
@@ -808,7 +864,13 @@ async function updatePrice(e) {
     }
 }
 
+async function loadRefundConfig() {
+    try {
+        console.log("📍 Lade Refund-Config von /refund-prices/KLASSIK, KOMFORT");
 
+        const refundConfig = {};
+
+        // Lade direkt aus /refund-prices/{category}
         for (const category of ['KLASSIK', 'KOMFORT']) {
             try {
                 const refundDoc = await db.collection('refund-prices').doc(category).get();
@@ -918,7 +980,6 @@ async function updateRefundConfig() {
         console.error('Update error:', error);
     }
 }
-
 
 async function loadUsers() {
     try {
