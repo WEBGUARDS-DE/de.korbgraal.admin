@@ -107,6 +107,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#contractsReservation" role="tab">
+                        <i class="bi bi-file-earmark-check"></i> Contracts (Reservation)
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#categories" role="tab">
                         <i class="bi bi-tags"></i> Kategorien
                     </a>
@@ -406,6 +411,35 @@
                                     <tbody id="chairsTable">
                                         <tr>
                                             <td colspan="4" class="text-center text-muted">Wird geladen...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contracts Reservation Tab -->
+                <div id="contractsReservation" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">Reservierungen (Status: Reservation)</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-header-orange">
+                                    <thead>
+                                        <tr>
+                                            <th>User ID</th>
+                                            <th>Contract ID</th>
+                                            <th>Status</th>
+                                            <th>Datum</th>
+                                            <th>Stuhl-Nummer</th>
+                                            <th>Kategorie</th>
+                                            <th>Preis</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="contractsReservationTable">
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">Wird geladen...</td>
                                         </tr>
                                     </tbody>
                                 </table>

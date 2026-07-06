@@ -153,6 +153,7 @@ async function loadDashboard() {
         await loadCategories();
         await loadPlanPositions();
         await loadPlanCategories();
+        await loadContractsReservation();
 
     } catch (error) {
         console.error('Dashboard load error:', error);
@@ -1342,6 +1343,73 @@ async function loadPlanCategories() {
         console.log("✅ Plan Categories geladen");
     } catch (error) {
         console.error('Plan categories error:', error);
+    }
+}
+
+// ==================== CONTRACTS RESERVATION ====================
+async function loadContractsReservation() {
+    try {
+        console.log("📍 Lade Contracts mit Status Reservation...");
+        const tbody = document.querySelector('#contractsReservationTable');
+        
+        // Lade alle Users
+        const usersRef = db.collection('users');
+        const usersSnapshot = await usersRef.get();
+        
+        let rows = [];
+        
+        // Für jeden User: lade seine Contracts
+        for (const userDoc of usersSnapshot.docs) {
+            const userId = userDoc.id;
+            
+            try {
+                const contractsRef = db.collection('contracts').doc('v2').collection(userId);
+                const contractsSnapshot = await contractsRef.get();
+                
+                contractsSnapshot.forEach(contractDoc => {
+                    const contractData = contractDoc.data();
+                    
+                    // Filter: Status === "Reservation"
+                    if (contractData.status === 'Reservation') {
+                        rows.push({
+                            userId,
+                            contractId: contractDoc.id,
+                            status: contractData.status,
+                            datum: contractData.createdAt ? new Date(contractData.createdAt.toDate()).toLocaleDateString('de-DE') : '-',
+                            stuhl: contractData.chairNumber || '-',
+                            kategorie: contractData.chairCategory || '-',
+                            preis: contractData.totalPrice ? '€' + contractData.totalPrice.toFixed(2) : '-'
+                        });
+                    }
+                });
+            } catch (error) {
+                console.warn(`Fehler beim Laden von contracts/v2/${userId}:`, error);
+            }
+        }
+        
+        let html = '';
+        if (rows.length === 0) {
+            html = '<tr><td colspan="7" class="text-center text-muted">Keine Reservierungen gefunden</td></tr>';
+        } else {
+            rows.forEach(row => {
+                html += `
+                    <tr>
+                        <td><small>${row.userId}</small></td>
+                        <td><small>${row.contractId}</small></td>
+                        <td><span class="badge bg-primary">${row.status}</span></td>
+                        <td>${row.datum}</td>
+                        <td>${row.stuhl}</td>
+                        <td>${row.kategorie}</td>
+                        <td>${row.preis}</td>
+                    </tr>
+                `;
+            });
+        }
+        
+        tbody.innerHTML = html;
+        console.log("✅ Contracts Reservation geladen:", rows.length, "Einträge");
+    } catch (error) {
+        console.error('Contracts reservation error:', error);
     }
 }
 
