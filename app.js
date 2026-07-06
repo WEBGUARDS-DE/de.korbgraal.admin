@@ -430,6 +430,9 @@ async function refreshContracts2025() {
         const userDoc = await db.collection('users').doc(OLD_UID).get();
         if (userDoc.exists) {
             const userEmail = userDoc.data().email || OLD_UID;
+            const tabHeader = document.querySelector('#contracts2025 .card-header span');
+            if (tabHeader) {
+                tabHeader.textContent = `Buchungen v2025 (${userEmail})`;
             }
         }
 

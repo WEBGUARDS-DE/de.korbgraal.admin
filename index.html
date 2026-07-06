@@ -67,6 +67,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#contracts2025" role="tab">
+                        <i class="bi bi-calendar-check"></i> Buchungen v2025
                     </a>
                 </li>
                 <li class="nav-item">
@@ -214,6 +216,28 @@
                 <!-- Contracts v2025 Tab -->
                 <div id="contracts2025" class="tab-pane fade">
                     <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <div><span id="contracts2025Title">Buchungen v2025 (QXyzCIkPR6TU2ZRPYAz1UKpotXz2)</span></div>
+                                <small class="text-muted" style="display: block; margin-top: 5px; font-weight: normal;">
+                                    ℹ️ Wenn alle Daten übertragen sind, wird dieser Tab entfernt. Dadurch lädt das Panel schneller.
+                                </small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-orange" onclick="exportCSV2025()">
+                                    <i class="bi bi-download"></i> CSV
+                                </button>
+                                <button class="btn btn-outline-orange" onclick="refreshContracts2025()">
+                                    <i class="bi bi-arrow-repeat"></i> Aktualisieren
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="contractsTable2025">
+                                    <thead>
+                                        <tr class="table-header-orange">
+                                            <th>Korb</th>
                                             <th>Kunde</th>
                                             <th>Startzeit</th>
                                             <th>Endzeit</th>
