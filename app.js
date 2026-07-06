@@ -1169,29 +1169,23 @@ async function loadChairs() {
             const data = snapshot.data();
             const positions = Object.keys(data).sort((a, b) => parseInt(a) - parseInt(b));
 
-            positions.forEach(position => {
-                const chairName = data[position];
-                // Erkenne Typ aus Namen oder nutze Standard
-                let chairType = 'KLASSIK';
-                if (chairName && chairName.toUpperCase().includes('K')) chairType = 'KOMFORT';
-                if (!chairName || chairName === '' || chairName.toLowerCase() === 'xxx') chairType = 'Frei';
+            // Gruppiere in 2er-Paaren: (0,1), (2,3), (4,5), ...
+            for (let i = 0; i < positions.length; i += 2) {
+                const pos0 = positions[i];
+                const pos1 = positions[i + 1];
+
+                const chair0 = data[pos0] || '';
+                const chair1 = pos1 ? (data[pos1] || '') : '';
 
                 html += `
                     <tr>
-                        <td><strong>${position}</strong></td>
-                        <td>${chairName || '-'}</td>
-                        <td><span class="badge bg-${chairType === 'KOMFORT' ? 'warning' : 'secondary'}">${chairType}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-orange" onclick="editChair('${position}')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteChair('${position}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
+                        <td><strong>${pos0}</strong></td>
+                        <td>${chair0}</td>
+                        <td>${chair1}</td>
+                        <td><strong>${pos1 !== undefined ? pos1 : ''}</strong></td>
                     </tr>
                 `;
-            });
+            }
         }
 
         tbody.innerHTML = html;
