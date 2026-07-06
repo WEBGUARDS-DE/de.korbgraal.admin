@@ -150,6 +150,7 @@ async function loadDashboard() {
         await loadRefundConfig();
         await loadChairs();
         await loadChairPlan();
+        await loadCategories();
 
     } catch (error) {
         console.error('Dashboard load error:', error);
@@ -1248,6 +1249,135 @@ async function loadChairPlan() {
     }
 }
 
+// ==================== CATEGORIES ====================
+async function loadCategories() {
+    try {
+        console.log("📍 Lade Chair Categories...");
+        const categoryRef = db.collection('chairCategory').doc('categories');
+        const doc = await categoryRef.get();
+        
+        const tbody = document.querySelector('#categoriesTable tbody');
+        if (!tbody) return;
+        
+        if (!doc.exists) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Keine Kategorien gefunden</td></tr>';
+            return;
+        }
+        
+        const categories = doc.data();
+        renderCategories(categories);
+        
+        console.log("✅ Categories geladen:", categories);
+    } catch (error) {
+        console.error('Categories load error:', error);
+    }
+}
+
+function renderCategories(categories) {
+    const tbody = document.querySelector('#categoriesTable tbody');
+    
+    // Sortiere nach numerischen Keys
+    const sorted = Object.entries(categories)
+        .sort(([keyA], [keyB]) => parseInt(keyA) - parseInt(keyB));
+    
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Keine Kategorien vorhanden</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    sorted.forEach(([index, name]) => {
+        html += `
+            <tr>
+                <td><strong>${index}</strong></td>
+                <td>${name}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('${name}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+}
+
+async function addCategory() {
+    const input = document.getElementById('newCategoryInput');
+    const name = input.value.trim();
+    
+    if (!name) {
+        alert('Bitte eine Kategorie eingeben');
+        return;
+    }
+    
+    try {
+        console.log("📍 Speichere neue Kategorie:", name);
+        
+        const categoryRef = db.collection('chairCategory').doc('categories');
+        const doc = await categoryRef.get();
+        
+        const categories = doc.exists ? doc.data() : {};
+        
+        // Finde nächste Nummer
+        const keys = Object.keys(categories).map(k => parseInt(k));
+        const nextIndex = keys.length > 0 ? Math.max(...keys) + 1 : 0;
+        
+        categories[nextIndex.toString()] = name;
+        
+        await categoryRef.set(categories);
+        
+        input.value = '';
+        await loadCategories();
+        
+        console.log("✅ Kategorie hinzugefügt");
+    } catch (error) {
+        console.error('Add category error:', error);
+        alert('Fehler beim Hinzufügen');
+    }
+}
+
+async function deleteCategory(name) {
+    if (!confirm(`Kategorie "${name}" wirklich löschen?`)) return;
+    
+    try {
+        console.log("📍 Lösche Kategorie:", name);
+        
+        const categoryRef = db.collection('chairCategory').doc('categories');
+        const doc = await categoryRef.get();
+        
+        if (!doc.exists) return;
+        
+        const categories = doc.data();
+        
+        // Finde und lösche
+        for (const [key, value] of Object.entries(categories)) {
+            if (value === name) {
+                delete categories[key];
+                break;
+            }
+        }
+        
+        // Renummeriere: 0, 1, 2, ... (keine Lücken)
+        const sorted = Object.entries(categories)
+            .sort(([keyA], [keyB]) => parseInt(keyA) - parseInt(keyB));
+        
+        const newCategories = {};
+        sorted.forEach(([_, value], index) => {
+            newCategories[index.toString()] = value;
+        });
+        
+        await categoryRef.set(newCategories);
+        await loadCategories();
+        
+        console.log("✅ Kategorie gelöscht, renummeriert");
+    } catch (error) {
+        console.error('Delete category error:', error);
+        alert('Fehler beim Löschen');
+    }
+}
+
 document.getElementById('addChairForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -1429,3 +1559,15 @@ function showToast(message, type = 'info') {
 }
 
 console.log('Admin Panel v' + APP_CONFIG.appVersion + ' loaded');
+
+// Event Listeners für Categories
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('newCategoryInput');
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addCategory();
+            }
+        });
+    }
+});

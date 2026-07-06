@@ -107,6 +107,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#categories" role="tab">
+                        <i class="bi bi-tags"></i> Kategorien
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#plan" role="tab">
                         <i class="bi bi-map"></i> Plan
                     </a>
@@ -401,6 +406,41 @@
                                     <tbody id="chairsTable">
                                         <tr>
                                             <td colspan="4" class="text-center text-muted">Wird geladen...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories Tab -->
+                <div id="categories" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">Stuhl-Kategorien verwalten</div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <input type="text" id="newCategoryInput" class="form-control" placeholder="Neue Kategorie eingeben (z.B. Premium, Standard)">
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-orange w-100" onclick="addCategory()">
+                                        <i class="bi bi-plus"></i> Hinzufügen
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-header-orange">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 80px;">Position</th>
+                                            <th>Kategorie</th>
+                                            <th style="width: 100px;">Aktion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="categoriesTable">
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">Wird geladen...</td>
                                         </tr>
                                     </tbody>
                                 </table>
