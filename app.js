@@ -1254,17 +1254,26 @@ async function loadCategories() {
     try {
         console.log("📍 Lade Chair Categories...");
         const categoryRef = db.collection('chairCategory').doc('categories');
+        console.log("📍 categoryRef created");
+        
         const doc = await categoryRef.get();
+        console.log("📍 doc.get() fertig, exists:", doc.exists);
         
         const tbody = document.querySelector('#categoriesTable tbody');
-        if (!tbody) return;
+        console.log("📍 tbody gefunden:", !!tbody);
+        if (!tbody) {
+            console.warn("⚠️  #categoriesTable tbody nicht gefunden");
+            return;
+        }
         
         if (!doc.exists) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Keine Kategorien gefunden</td></tr>';
+            console.log("⚠️  Keine chairCategory/categories Document");
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Keine Kategorien vorhanden</td></tr>';
             return;
         }
         
         const categories = doc.data();
+        console.log("📍 categories data:", categories);
         renderCategories(categories);
         
         console.log("✅ Categories geladen:", categories);
