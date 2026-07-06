@@ -1259,10 +1259,10 @@ async function loadCategories() {
         const doc = await categoryRef.get();
         console.log("📍 doc.get() fertig, exists:", doc.exists);
         
-        const tbody = document.querySelector('#categoriesTable tbody');
+        const tbody = document.querySelector('#categoriesTable');
         console.log("📍 tbody gefunden:", !!tbody);
         if (!tbody) {
-            console.warn("⚠️  #categoriesTable tbody nicht gefunden");
+            console.warn("⚠️  #categoriesTable nicht gefunden");
             return;
         }
         
@@ -1283,7 +1283,7 @@ async function loadCategories() {
 }
 
 function renderCategories(categories) {
-    const tbody = document.querySelector('#categoriesTable tbody');
+    const tbody = document.querySelector('#categoriesTable');
     
     // Sortiere nach numerischen Keys
     const sorted = Object.entries(categories)
