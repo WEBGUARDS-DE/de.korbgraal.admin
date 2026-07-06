@@ -151,6 +151,8 @@ async function loadDashboard() {
         await loadChairs();
         await loadChairPlan();
         await loadCategories();
+        await loadPlanPositions();
+        await loadPlanCategories();
 
     } catch (error) {
         console.error('Dashboard load error:', error);
@@ -1246,6 +1248,100 @@ async function loadChairPlan() {
         console.log('✅ Chair Plan geladen');
     } catch (error) {
         console.error('Chair plan error:', error);
+    }
+}
+
+// ==================== PLAN POSITIONS ====================
+async function loadPlanPositions() {
+    try {
+        console.log("📍 Lade Plan Positions...");
+        const tbody = document.querySelector('#planPositionsTable');
+        
+        // Laden Sie alle Users und deren chairsOrder
+        const usersRef = db.collection('users');
+        const usersSnapshot = await usersRef.get();
+        
+        let html = '';
+        
+        for (const userDoc of usersSnapshot.docs) {
+            const userId = userDoc.id;
+            
+            try {
+                const ordersRef = db.collection('chairsOrder').doc(userId);
+                const orderDoc = await ordersRef.get();
+                
+                if (orderDoc.exists) {
+                    const orders = orderDoc.data();
+                    
+                    for (const [chairNum, data] of Object.entries(orders)) {
+                        html += `
+                            <tr>
+                                <td><small>${userId}</small></td>
+                                <td>${chairNum}</td>
+                                <td>${data.category || '-'}</td>
+                                <td>${data.position?.x || '-'}</td>
+                                <td>${data.position?.y || '-'}</td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.warn(`Fehler beim Laden von chairsOrder/${userId}:`, error);
+            }
+        }
+        
+        if (html === '') {
+            html = '<tr><td colspan="5" class="text-center text-muted">Keine Positionen gefunden</td></tr>';
+        }
+        
+        tbody.innerHTML = html;
+        console.log("✅ Plan Positions geladen");
+    } catch (error) {
+        console.error('Plan positions error:', error);
+    }
+}
+
+// ==================== PLAN CATEGORIES ====================
+async function loadPlanCategories() {
+    try {
+        console.log("📍 Lade Plan Categories...");
+        const tbody = document.querySelector('#planCategoriesTable');
+        
+        const categoryRef = db.collection('chairCategory').doc('Category');
+        const doc = await categoryRef.get();
+        
+        if (!doc.exists) {
+            tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">Keine Kategorien vorhanden</td></tr>';
+            return;
+        }
+        
+        const categories = doc.data();
+        
+        // Sortiere numerisch
+        const sorted = Object.entries(categories)
+            .sort(([keyA], [keyB]) => {
+                const numA = parseInt(keyA);
+                const numB = parseInt(keyB);
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return numA - numB;
+                }
+                return keyA.localeCompare(keyB);
+            });
+        
+        let html = '';
+        sorted.forEach(([index, name]) => {
+            html += `
+                <tr>
+                    <td><strong>${index}</strong></td>
+                    <td>${name}</td>
+                </tr>
+            `;
+        });
+        
+        tbody.innerHTML = html;
+        console.log("✅ Plan Categories geladen");
+    } catch (error) {
+        console.error('Plan categories error:', error);
     }
 }
 

@@ -452,16 +452,63 @@
                 <!-- Plan Tab -->
                 <div id="plan" class="tab-pane fade">
                     <div class="card">
-                        <div class="card-header">Körbe-Plan (2-spaltig)</div>
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#planPositions" role="tab">
+                                        <i class="bi bi-grid-3x3"></i> Positionen
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#planCategories" role="tab">
+                                        <i class="bi bi-tags"></i> Kategorien
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                         <div class="card-body">
-                            <div class="alert alert-info mb-3">
-                                <strong>Legende:</strong><br>
-                                <span class="badge" style="background-color: #ffc107; color: black;">KOMFORT</span>
-                                <span class="badge" style="background-color: #ffffff; border: 1px solid #999; color: black;">KLASSIK</span>
-                                <span class="badge" style="background-color: #e0e0e0; color: black;">Freifläche</span>
-                                <span class="badge" style="background-color: #ccffcc; color: black;">Zugang</span>
+                            <!-- Positionen Sub-Tab -->
+                            <div id="planPositions" class="tab-pane fade show active">
+                                <h5 class="mb-3">Chair-Positionen (chairsOrder)</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-header-orange">
+                                        <thead>
+                                            <tr>
+                                                <th>User ID</th>
+                                                <th>Stuhl-Nummer</th>
+                                                <th>Kategorie</th>
+                                                <th>Position X</th>
+                                                <th>Position Y</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="planPositionsTable">
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">Wird geladen...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div id="chairGrid" class="chair-grid"></div>
+
+                            <!-- Kategorien Sub-Tab -->
+                            <div id="planCategories" class="tab-pane fade">
+                                <h5 class="mb-3">Chair-Kategorien (chairCategory/Category)</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-header-orange">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 80px;">Position</th>
+                                                <th>Kategorie</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="planCategoriesTable">
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted">Wird geladen...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
