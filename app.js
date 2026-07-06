@@ -1253,7 +1253,7 @@ async function loadChairPlan() {
 async function loadCategories() {
     try {
         console.log("📍 Lade Chair Categories...");
-        const categoryRef = db.collection('chairCategory').doc('categories');
+        const categoryRef = db.collection('chairCategory').doc('Category');
         console.log("📍 categoryRef created");
         
         const doc = await categoryRef.get();
@@ -1267,7 +1267,7 @@ async function loadCategories() {
         }
         
         if (!doc.exists) {
-            console.log("⚠️  Keine chairCategory/categories Document");
+            console.log("⚠️  Keine chairCategory/Category Document");
             tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Keine Kategorien vorhanden</td></tr>';
             return;
         }
@@ -1324,7 +1324,7 @@ async function addCategory() {
     try {
         console.log("📍 Speichere neue Kategorie:", name);
         
-        const categoryRef = db.collection('chairCategory').doc('categories');
+        const categoryRef = db.collection('chairCategory').doc('Category');
         const doc = await categoryRef.get();
         
         const categories = doc.exists ? doc.data() : {};
@@ -1353,7 +1353,7 @@ async function deleteCategory(name) {
     try {
         console.log("📍 Lösche Kategorie:", name);
         
-        const categoryRef = db.collection('chairCategory').doc('categories');
+        const categoryRef = db.collection('chairCategory').doc('Category');
         const doc = await categoryRef.get();
         
         if (!doc.exists) return;
