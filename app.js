@@ -884,13 +884,13 @@ function renderRefundConfig(config) {
                                    value="${values.grace_period_minutes || 15}" min="0" max="60">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Volle Erstattung (€)</label>
+                            <label class="form-label">nach 1 Stunde (€)</label>
                             <input type="number" class="form-control refund-input"
                                    data-category="${category}" data-key="one_hour_full_refund"
                                    value="${values.one_hour_full_refund || 10}" step="0.01" min="0">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Halbe Erstattung (€)</label>
+                            <label class="form-label">nach 2 Stunden (€)</label>
                             <input type="number" class="form-control refund-input"
                                    data-category="${category}" data-key="one_hour_half_refund"
                                    value="${values.one_hour_half_refund || 6}" step="0.01" min="0">
