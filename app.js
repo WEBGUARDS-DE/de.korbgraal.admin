@@ -700,61 +700,88 @@ async function loadPrices() {
                     <div class="card-header"><strong>${category}</strong> Preise</div>
                     <div class="card-body">`;
 
-            const DURATION_LABELS = {
-                '1': '1 Stunde', '2': '2 Stunden', '3': '3 Stunden',
-                '24': '1 Tag', '48': '2 Tage', '72': '3 Tage', '96': '4 Tage',
-                '120': '5 Tage', '144': '6 Tage', '168': '7 Tage'
-            };
-
-            // Normale Preise
             if (data.durations) {
-                for (const [key, price] of Object.entries(data.durations)) {
-                    if (key === '6') continue; // Skip Staffel
-                    
-                    if (typeof price === 'number') {
-                        const label = DURATION_LABELS[key] || key;
-                        console.log(`  Render: ${category} ${key} = ${price} EUR`);
+                // 1 Stunde
+                if (typeof data.durations['1'] === 'number') {
+                    html += `
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <label><small>1 Stunde</small></label>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control price-input"
+                                       data-category="${category}" data-duration="1" 
+                                       value="${data.durations['1']}">
+                                <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // 2 Stunden
+                if (typeof data.durations['2'] === 'number') {
+                    html += `
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <label><small>2 Stunden</small></label>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control price-input"
+                                       data-category="${category}" data-duration="2" 
+                                       value="${data.durations['2']}">
+                                <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Halbtag vor 16 Uhr (ab 13:30)
+                const halfday = data.durations['6'];
+                if (halfday && typeof halfday === 'object' && halfday.before) {
+                    html += `
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <label><small>ab 13:30</small></label>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control price-input"
+                                       data-category="${category}" data-key="durations.6.before" 
+                                       value="${halfday.before}">
+                                <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Halbtag ab 16 Uhr
+                if (halfday && typeof halfday === 'object' && halfday.after) {
+                    html += `
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <label><small>ab 16:00</small></label>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control price-input"
+                                       data-category="${category}" data-key="durations.6.after" 
+                                       value="${halfday.after}">
+                                <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Tage (1-7)
+                const dayLabels = {
+                    '24': '1 Tag',
+                    '48': '2 Tage',
+                    '72': '3 Tage',
+                    '96': '4 Tage',
+                    '120': '5 Tage',
+                    '144': '6 Tage',
+                    '168': '7 Tage'
+                };
+
+                for (const [duration, label] of Object.entries(dayLabels)) {
+                    if (typeof data.durations[duration] === 'number') {
                         html += `
                             <div class="mb-2 d-flex justify-content-between align-items-center">
                                 <label><small>${label}</small></label>
                                 <div class="input-group input-group-sm" style="width: 120px;">
                                     <input type="number" class="form-control price-input"
-                                           data-category="${category}" data-duration="${key}" 
-                                           value="${price}">
-                                    <span class="input-group-text">€</span>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-
-                // Halbtag-Staffel
-                const halfday = data.durations['6'];
-                if (halfday && typeof halfday === 'object') {
-                    html += `<hr class="my-3"><small class="text-muted"><strong>Halbtag-Staffel</strong></small><br>`;
-                    
-                    if (halfday.before) {
-                        html += `
-                            <div class="mb-2 d-flex justify-content-between align-items-center">
-                                <label><small>Vor 16 Uhr</small></label>
-                                <div class="input-group input-group-sm" style="width: 120px;">
-                                    <input type="number" class="form-control price-input"
-                                           data-category="${category}" data-key="durations.6.before" 
-                                           value="${halfday.before}">
-                                    <span class="input-group-text">€</span>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    if (halfday.after) {
-                        html += `
-                            <div class="mb-2 d-flex justify-content-between align-items-center">
-                                <label><small>Ab 16 Uhr</small></label>
-                                <div class="input-group input-group-sm" style="width: 120px;">
-                                    <input type="number" class="form-control price-input"
-                                           data-category="${category}" data-key="durations.6.after" 
-                                           value="${halfday.after}">
+                                           data-category="${category}" data-duration="${duration}" 
+                                           value="${data.durations[duration]}">
                                     <span class="input-group-text">€</span>
                                 </div>
                             </div>
@@ -767,7 +794,7 @@ async function loadPrices() {
         }
 
         pricesGrid.innerHTML = html;
-        console.log("✅ HTML gerendert mit Werten");
+        console.log("✅ Preisblatt gerendert (custom Reihenfolge)");
 
         document.querySelectorAll('.price-input').forEach(input => {
             input.addEventListener('change', updatePrice);
@@ -775,6 +802,7 @@ async function loadPrices() {
 
     } catch (error) {
         console.error('❌ Error:', error);
+        alert('Fehler: ' + error.message);
     }
 }
 
