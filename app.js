@@ -595,9 +595,9 @@ function exportCSV() {
 // ==================== SYNC LOGS ====================
 async function refreshSyncLogs() {
     try {
-        const tbody = document.querySelector(\'#syncLogsTable\');
+        const tbody = document.querySelector('#syncLogsTable');
         if (!tbody) {
-            console.log(\'ℹ️ refreshSyncLogs skipped - #syncLogsTable nicht in HTML (alte Tab-Struktur)\');
+            console.log('ℹ️ refreshSyncLogs skipped - #syncLogsTable nicht in HTML (alte Tab-Struktur)');
             return;
         }
         // Load all users first (für Email-Mapping)
@@ -610,7 +610,6 @@ async function refreshSyncLogs() {
         const syncLogsRef = db.collection('sync-logs');
         const snapshot = await syncLogsRef.get();
 
-        const tbody = document.querySelector('#syncLogsTable');
         let html = '';
 
         if (snapshot.empty) {
@@ -645,9 +644,9 @@ async function refreshSyncLogs() {
 // ==================== PRINT LOGS ====================
 async function refreshPrintLogs() {
     try {
-        const tbody = document.querySelector(\'#printLogsTable\');
+        const tbody = document.querySelector('#printLogsTable');
         if (!tbody) {
-            console.log(\'ℹ️ refreshPrintLogs skipped - #printLogsTable nicht in HTML (alte Tab-Struktur)\');
+            console.log('ℹ️ refreshPrintLogs skipped - #printLogsTable nicht in HTML (alte Tab-Struktur)');
             return;
         }
         // Load all users first (für Email-Mapping)
@@ -660,7 +659,6 @@ async function refreshPrintLogs() {
         const printLogsRef = db.collection('print-logs');
         const snapshot = await printLogsRef.get();
 
-        const tbody = document.querySelector('#printLogsTable');
         let html = '';
 
         if (snapshot.empty) {
@@ -960,9 +958,9 @@ async function updateRefundConfig() {
 
 async function loadUsers() {
     try {
-        const tbody = document.querySelector(\'#usersTable\');
+        const tbody = document.querySelector('#usersTable');
         if (!tbody) {
-            console.log(\'ℹ️ loadUsers skipped - #usersTable nicht in HTML (alte Tab-Struktur)\');
+            console.log('ℹ️ loadUsers skipped - #usersTable nicht in HTML (alte Tab-Struktur)');
             return;
         }
         const usersRef = db.collection('users');
@@ -972,7 +970,6 @@ async function loadUsers() {
         console.log("📍 loadUsers: Snapshot empty?", snapshot.empty);
         console.log("📍 loadUsers: Snapshot docs:", snapshot.docs.map(d => ({ id: d.id, email: d.data().email })));
 
-        const tbody = document.querySelector('#usersTable');
         let html = '';
 
         if (snapshot.empty) {
@@ -1071,9 +1068,9 @@ async function deleteUser(uid) {
 // ==================== DEVICES ====================
 async function loadDevices() {
     try {
-        const tbody = document.querySelector(\'#devicesTable\');
+        const tbody = document.querySelector('#devicesTable');
         if (!tbody) {
-            console.log(\'ℹ️ loadDevices skipped - #devicesTable nicht in HTML (alte Tab-Struktur)\');
+            console.log('ℹ️ loadDevices skipped - #devicesTable nicht in HTML (alte Tab-Struktur)');
             return;
         }
         // Load all users first (für Email-Mapping)
