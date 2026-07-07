@@ -153,11 +153,38 @@
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark mb-4">
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="modal-title">🏖️ Strandkorb 26 Admin</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Passwort</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <div id="loginError" class="alert alert-danger d-none"></div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar (versteckt bis Login) -->
+    <nav class="navbar navbar-dark mb-4" id="navbar" style="display: none;">
         <div class="container-fluid">
             <span class="navbar-brand">🏖️ Strandkorb 26 - Admin Panel</span>
-            <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+            <div>
+                <span id="userEmail" class="me-3 text-white"></span>
+                <button id="logoutBtn" class="btn btn-light btn-sm">Logout</button>
         </div>
     </nav>
 

@@ -20,21 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
+    authContainer = document.getElementById('authContainer');
+    mainContent = document.getElementById('mainContent');
     loginForm = document.getElementById('loginForm');
     logoutBtn = document.getElementById('logoutBtn');
     userEmail = document.getElementById('userEmail');
-    navbar = document.getElementById('navbar');
-    loginModal = document.getElementById('loginModal');
 
-    // Setup login form (guard clause)
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-
-    // Setup logout button
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
+    // Setup login form
+    loginForm.addEventListener('submit', handleLogin);
 
     // Setup auth state
     window.auth.onAuthStateChanged(handleAuthStateChanged);
@@ -60,18 +53,10 @@ async function handleLogin(e) {
 async function handleAuthStateChanged(user) {
     if (user) {
         currentUser = user;
-        
-        // Show navbar, hide modal
-        if (navbar) navbar.style.display = 'block';
-        if (loginModal) {
-            const modal = bootstrap.Modal.getInstance(loginModal);
-            if (modal) modal.hide();
-        }
-        
-        // Update user email
-        if (userEmail) userEmail.textContent = user.email;
-        if (document.getElementById('fbProject')) document.getElementById('fbProject').textContent = APP_CONFIG.appName;
-        
+        authContainer.style.display = 'none';
+        mainContent.style.display = 'block';
+        userEmail.textContent = user.email;
+        document.getElementById('fbProject').textContent = APP_CONFIG.appName;
         console.log("✅ User logged in:", user.email);
 
         // Load all data
@@ -86,21 +71,15 @@ async function handleAuthStateChanged(user) {
         }, APP_CONFIG.refreshInterval);
     } else {
         currentUser = null;
-        
-        // Hide navbar, show modal
-        if (navbar) navbar.style.display = 'none';
-        if (loginModal) {
-            const modal = new bootstrap.Modal(loginModal, { backdrop: 'static', keyboard: false });
-            modal.show();
-        }
-        
+        authContainer.style.display = 'flex';
+        mainContent.style.display = 'none';
         if (autoRefreshInterval) clearInterval(autoRefreshInterval);
         console.log("⚠️ User logged out");
     }
 }
 
-function handleLogout() {
-    auth.signOut().catch(error => console.error("Logout error:", error));
+function signOut() {
+    auth.signOut();
 }
 
 // ==================== DASHBOARD ====================
@@ -133,8 +112,8 @@ async function loadDashboard() {
             }
         });
 
-        if (document.getElementById('stat-today')) document.getElementById('stat-today').textContent = todayContracts;
-        if (document.getElementById('stat-revenue')) document.getElementById('stat-revenue').textContent = todayRevenue + '€';
+        document.getElementById('stat-today').textContent = todayContracts;
+        document.getElementById('stat-revenue').textContent = todayRevenue + '€';
 
         // Load users count (Test: ohne WHERE)
         const usersRef = db.collection('users');
@@ -143,7 +122,7 @@ async function loadDashboard() {
         console.log("✅ Users geladen:", usersSnapshot.size);
 
         const newUserCount = Array.from(usersSnapshot.docs).filter(doc => doc.data().appVersion === 'new').length;
-        if (document.getElementById('stat-users')) document.getElementById('stat-users').textContent = newUserCount;
+        document.getElementById('stat-users').textContent = newUserCount;
 
         // Load devices - from sync logs (Test: ohne limit)
         const syncLogsRef = db.collection('sync-logs');
@@ -155,7 +134,7 @@ async function loadDashboard() {
         devicesSnapshot.forEach(doc => {
             if (doc.data().user) uniqueDevices.add(doc.data().user);
         });
-        if (document.getElementById('stat-devices')) document.getElementById('stat-devices').textContent = uniqueDevices.size;
+        document.getElementById('stat-devices').textContent = uniqueDevices.size;
 
         // Load charts
         loadCharts();
@@ -1200,15 +1179,10 @@ async function updateSettings() {
 // ==================== CHAIRS ====================
 async function loadChairs() {
     try {
-        const tbody = document.getElementById('chairsTable');
-        if (!tbody) {
-            console.log('ℹ️ loadChairs skipped - #chairsTable nicht in HTML (alte Tab-Struktur)');
-            return;
-        }
-
         const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
         const snapshot = await chairOrderRef.get();
 
+        const tbody = document.getElementById('chairsTable');
         let html = '';
 
         if (!snapshot.exists || !snapshot.data()) {
@@ -1355,49 +1329,44 @@ async function loadPlanPositions() {
     try {
         console.log("📍 Lade Plan Positions...");
         const tbody = document.querySelector('#planPositionsTable');
-        if (!tbody) {
-            console.log('ℹ️ loadPlanPositions skipped - #planPositionsTable nicht in HTML');
-            return;
-        }
-
-        // Lade chairOrder/{CHAIR_ORDER_UID} - Struktur: Position → Korbnummer
-        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
-        const chairOrderDoc = await chairOrderRef.get();
         
-        // Lade chairCategory für Kategorien
-        const categoryRef = db.collection('chairCategory').doc('Category');
-        const categoryDoc = await categoryRef.get();
-        const categories = categoryDoc.exists ? categoryDoc.data() : {};
-
-        // Lade chairPositionText für Position-Labels
-        const positionTextRef = db.collection('chairPositionText').doc('title');
-        const positionTextDoc = await positionTextRef.get();
-        const positionTexts = positionTextDoc.exists ? positionTextDoc.data() : {};
-
+        // Laden Sie alle Users und deren chairsOrder
+        const usersRef = db.collection('users');
+        const usersSnapshot = await usersRef.get();
+        
         let html = '';
-
-        if (!chairOrderDoc.exists || !chairOrderDoc.data()) {
-            html = '<tr><td colspan="4" class="text-center text-muted">Keine Positionen gefunden</td></tr>';
-        } else {
-            const positions = chairOrderDoc.data();
-            const positionKeys = Object.keys(positions).sort((a, b) => parseInt(a) - parseInt(b));
-
-            for (const position of positionKeys) {
-                const chairNum = positions[position];
-                const category = categories[chairNum] || '-';
-                const positionLabel = positionTexts[position] || position; // Fallback auf Nummer
-
-                html += `
-                    <tr>
-                        <td><strong>${positionLabel}</strong></td>
-                        <td>${chairNum}</td>
-                        <td>${category}</td>
-                        <td><button class="btn btn-sm btn-outline-danger" onclick="deleteChairFromPosition(${position})">✕</button></td>
-                    </tr>
-                `;
+        
+        for (const userDoc of usersSnapshot.docs) {
+            const userId = userDoc.id;
+            
+            try {
+                const ordersRef = db.collection('chairsOrder').doc(userId);
+                const orderDoc = await ordersRef.get();
+                
+                if (orderDoc.exists) {
+                    const orders = orderDoc.data();
+                    
+                    for (const [chairNum, data] of Object.entries(orders)) {
+                        html += `
+                            <tr>
+                                <td><small>${userId}</small></td>
+                                <td>${chairNum}</td>
+                                <td>${data.category || '-'}</td>
+                                <td>${data.position?.x || '-'}</td>
+                                <td>${data.position?.y || '-'}</td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.warn(`Fehler beim Laden von chairsOrder/${userId}:`, error);
             }
         }
-
+        
+        if (html === '') {
+            html = '<tr><td colspan="5" class="text-center text-muted">Keine Positionen gefunden</td></tr>';
+        }
+        
         tbody.innerHTML = html;
         console.log("✅ Plan Positions geladen");
     } catch (error) {
