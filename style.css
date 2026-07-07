@@ -537,3 +537,15 @@ nav .navbar-brand {
         page-break-inside: avoid;
     }
 }
+
+/* Inline Edit für Korbnummern */
+.chair-cell {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.chair-cell:hover {
+    background-color: #fff3cd;
+    border-radius: 3px;
+}

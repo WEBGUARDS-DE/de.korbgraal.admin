@@ -1180,8 +1180,8 @@ async function loadChairs() {
                 html += `
                     <tr>
                         <td><strong>${pos0}</strong></td>
-                        <td>${chair0}</td>
-                        <td>${chair1}</td>
+                        <td class="chair-cell" data-position="${pos0}" data-value="${chair0}" onclick="editChairInline(this)">${chair0}</td>
+                        <td class="chair-cell" data-position="${pos1 || ''}" data-value="${chair1}" onclick="editChairInline(this)" ${pos1 === undefined ? 'style="pointer-events:none; color: #ccc;"' : ''}>${chair1}</td>
                         <td><strong>${pos1 !== undefined ? pos1 : ''}</strong></td>
                     </tr>
                 `;
@@ -1193,6 +1193,56 @@ async function loadChairs() {
     } catch (error) {
         console.error('Chairs load error:', error);
     }
+}
+
+function editChairInline(cell) {
+    if (!cell.dataset.position) return; // Keine Bearbeitung für leere Zellen
+    
+    const position = cell.dataset.position;
+    const currentValue = cell.innerText;
+    
+    // Erstelle Input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control';
+    input.value = currentValue;
+    input.style.maxWidth = '100px';
+    
+    // Ersetze Zelle-Inhalt mit Input
+    cell.innerHTML = '';
+    cell.appendChild(input);
+    input.focus();
+    input.select();
+    
+    // Speichern bei Enter oder Blur
+    const saveChair = async () => {
+        const newValue = input.value.trim();
+        
+        try {
+            const chairOrderRef = db.collection('chairOrder').doc(SHARED_UID);
+            const snapshot = await chairOrderRef.get();
+            const data = snapshot.data() || {};
+            
+            // Aktualisiere
+            data[position] = newValue;
+            
+            await chairOrderRef.set(data);
+            console.log(`✅ Position ${position} aktualisiert zu "${newValue}"`);
+            
+            // Reload
+            await loadChairs();
+        } catch (error) {
+            console.error('Update error:', error);
+            alert('Fehler beim Speichern');
+            cell.innerText = currentValue; // Revert
+        }
+    };
+    
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') saveChair();
+    });
+    
+    input.addEventListener('blur', saveChair);
 }
 
 async function loadChairPlan() {
