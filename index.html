@@ -62,8 +62,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#buchungen" role="tab">
+                    <a class="nav-link" data-bs-toggle="tab" href="#contracts2025" role="tab">
                         <i class="bi bi-calendar-check"></i> Buchungen
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#contracts" role="tab">
+                        <i class="bi bi-calendar-check"></i> DEV MODE
                     </a>
                 </li>
                 <li class="nav-item">
@@ -181,33 +186,45 @@
                     </div>
                 </div>
 
-                <!-- Buchungen Group Tab -->
-                <div id="buchungen" class="tab-pane fade">
+                <!-- Contracts Tab -->
+                <div id="contracts" class="tab-pane fade">
                     <div class="card">
-                        <div class="card-header">
-                            <ul class="nav nav-tabs card-header-tabs" role="tablist">
-                                <li class="nav-item">
-                                    <a class="nav-link active" data-bs-toggle="tab" href="#buchungen-2025" role="tab">
-                                        <i class="bi bi-calendar-check"></i> Buchungen v2025
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" data-bs-toggle="tab" href="#buchungen-dev" role="tab">
-                                        <i class="bi bi-bug"></i> DEV MODE
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" data-bs-toggle="tab" href="#buchungen-contracts" role="tab">
-                                        <i class="bi bi-file-earmark-check"></i> Contracts (Res.)
-                                    </a>
-                                </li>
-                            </ul>
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>DEV MODE</span>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-orange" onclick="exportCSV()">
+                                    <i class="bi bi-download"></i> CSV
+                                </button>
+                                <button class="btn btn-outline-orange" onclick="refreshContracts()">
+                                    <i class="bi bi-arrow-repeat"></i> Aktualisieren
+                                </button>
+                            </div>
                         </div>
                         <div class="card-body">
-                            <div class="tab-content">
-                                <!-- Sub-Tab: Buchungen v2025 -->
-                                <div id="buchungen-2025" class="tab-pane fade show active">
-                                    
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="contractsTable">
+                                    <thead>
+                                        <tr class="table-header-orange">
+                                            <th>ID</th>
+                                            <th>Korb</th>
+                                            <th>Kunde</th>
+                                            <th>Startzeit</th>
+                                            <th>Endzeit</th>
+                                            <th>Preis</th>
+                                            <th>Bezahlt</th>
+                                            <th>Status</th>
+                                            <th>Aktion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contracts v2025 Tab -->
+                <div id="contracts2025" class="tab-pane fade">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <div>
@@ -242,59 +259,6 @@
                                     </thead>
                                     <tbody></tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                
-                                </div>
-
-                                <!-- Sub-Tab: DEV MODE -->
-                                <div id="buchungen-dev" class="tab-pane fade">
-                                    
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <span>DEV MODE</span>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-orange" onclick="exportCSV()">
-                                    <i class="bi bi-download"></i> CSV
-                                </button>
-                                <button class="btn btn-outline-orange" onclick="refreshContracts()">
-                                    <i class="bi bi-arrow-repeat"></i> Aktualisieren
-                                </button>
-                            
-                                </div>
-
-                                <!-- Sub-Tab: Contracts (Reservation) -->
-                                <div id="buchungen-contracts" class="tab-pane fade">
-                                    
-                    <div class="card">
-                        <div class="card-header">Reservierungen (Status: Reservation)</div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-header-orange">
-                                    <thead>
-                                        <tr>
-                                            <th>User ID</th>
-                                            <th>Contract ID</th>
-                                            <th>Status</th>
-                                            <th>Datum</th>
-                                            <th>Stuhl-Nummer</th>
-                                            <th>Kategorie</th>
-                                            <th>Preis</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="contractsReservationTable">
-                                        <tr>
-                                            <td colspan="7" class="text-center text-muted">Wird geladen...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    <!-- Categories
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -447,6 +411,35 @@
                                     <tbody id="chairsTable">
                                         <tr>
                                             <td colspan="4" class="text-center text-muted">Wird geladen...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contracts Reservation Tab -->
+                <div id="contractsReservation" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">Reservierungen (Status: Reservation)</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-header-orange">
+                                    <thead>
+                                        <tr>
+                                            <th>User ID</th>
+                                            <th>Contract ID</th>
+                                            <th>Status</th>
+                                            <th>Datum</th>
+                                            <th>Stuhl-Nummer</th>
+                                            <th>Kategorie</th>
+                                            <th>Preis</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="contractsReservationTable">
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">Wird geladen...</td>
                                         </tr>
                                     </tbody>
                                 </table>
