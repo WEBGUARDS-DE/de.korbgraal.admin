@@ -1179,8 +1179,8 @@ async function updateSettings() {
 // ==================== CHAIRS ====================
 async function loadChairs() {
     try {
-        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
-        const snapshot = await chairOrderRef.get();
+        const chairsOrderRef = db.collection('chairsOrder').doc(CHAIR_ORDER_UID);
+        const snapshot = await chairsOrderRef.get();
 
         const tbody = document.getElementById('chairsTable');
         let html = '';
@@ -1241,14 +1241,14 @@ function editChairInline(cell) {
         const newValue = input.value.trim();
         
         try {
-            const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
-            const snapshot = await chairOrderRef.get();
+            const chairsOrderRef = db.collection('chairsOrder').doc(CHAIR_ORDER_UID);
+            const snapshot = await chairsOrderRef.get();
             const data = snapshot.data() || {};
             
             // Aktualisiere
             data[position] = newValue;
             
-            await chairOrderRef.set(data);
+            await chairsOrderRef.set(data);
             console.log(`✅ Position ${position} aktualisiert zu "${newValue}"`);
             
             // Reload
@@ -1276,8 +1276,8 @@ async function loadChairPlan() {
             return;
         }
 
-        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
-        const snapshot = await chairOrderRef.get();
+        const chairsOrderRef = db.collection('chairsOrder').doc(CHAIR_ORDER_UID);
+        const snapshot = await chairsOrderRef.get();
         let html = '<div class="row g-3">';
 
         if (!snapshot.exists || !snapshot.data()) {
@@ -1329,44 +1329,43 @@ async function loadPlanPositions() {
     try {
         console.log("📍 Lade Plan Positions...");
         const tbody = document.querySelector('#planPositionsTable');
+        if (!tbody) {
+            console.log('ℹ️ loadPlanPositions skipped - #planPositionsTable nicht in HTML');
+            return;
+        }
+
+        // Lade chairsOrder/{CHAIR_ORDER_UID} - einfache Struktur: Position → Korbnummer
+        const chairsOrderRef = db.collection('chairsOrder').doc(CHAIR_ORDER_UID);
+        const chairsOrderDoc = await chairsOrderRef.get();
         
-        // Laden Sie alle Users und deren chairsOrder
-        const usersRef = db.collection('users');
-        const usersSnapshot = await usersRef.get();
-        
+        // Lade chairCategory für Kategorien
+        const categoryRef = db.collection('chairCategory').doc('Category');
+        const categoryDoc = await categoryRef.get();
+        const categories = categoryDoc.exists ? categoryDoc.data() : {};
+
         let html = '';
-        
-        for (const userDoc of usersSnapshot.docs) {
-            const userId = userDoc.id;
-            
-            try {
-                const ordersRef = db.collection('chairsOrder').doc(userId);
-                const orderDoc = await ordersRef.get();
-                
-                if (orderDoc.exists) {
-                    const orders = orderDoc.data();
-                    
-                    for (const [chairNum, data] of Object.entries(orders)) {
-                        html += `
-                            <tr>
-                                <td><small>${userId}</small></td>
-                                <td>${chairNum}</td>
-                                <td>${data.category || '-'}</td>
-                                <td>${data.position?.x || '-'}</td>
-                                <td>${data.position?.y || '-'}</td>
-                            </tr>
-                        `;
-                    }
-                }
-            } catch (error) {
-                console.warn(`Fehler beim Laden von chairsOrder/${userId}:`, error);
+
+        if (!chairsOrderDoc.exists || !chairsOrderDoc.data()) {
+            html = '<tr><td colspan="4" class="text-center text-muted">Keine Positionen gefunden</td></tr>';
+        } else {
+            const positions = chairsOrderDoc.data();
+            const positionKeys = Object.keys(positions).sort((a, b) => parseInt(a) - parseInt(b));
+
+            for (const position of positionKeys) {
+                const chairNum = positions[position];
+                const category = categories[chairNum] || '-';
+
+                html += `
+                    <tr>
+                        <td><strong>${position}</strong></td>
+                        <td>${chairNum}</td>
+                        <td>${category}</td>
+                        <td><button class="btn btn-sm btn-outline-danger" onclick="deleteChairFromPosition(${position})">✕</button></td>
+                    </tr>
+                `;
             }
         }
-        
-        if (html === '') {
-            html = '<tr><td colspan="5" class="text-center text-muted">Keine Positionen gefunden</td></tr>';
-        }
-        
+
         tbody.innerHTML = html;
         console.log("✅ Plan Positions geladen");
     } catch (error) {
@@ -1629,8 +1628,8 @@ document.getElementById('addChairForm')?.addEventListener('submit', async (e) =>
         const name = document.getElementById('chairName').value;
         const type = document.getElementById('chairType').value;
 
-        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
-        const snapshot = await chairOrderRef.get();
+        const chairsOrderRef = db.collection('chairsOrder').doc(CHAIR_ORDER_UID);
+        const snapshot = await chairsOrderRef.get();
 
         let nextPosition = 1;
         if (snapshot.exists && snapshot.data()) {
@@ -1641,7 +1640,7 @@ document.getElementById('addChairForm')?.addEventListener('submit', async (e) =>
         const updateData = {};
         updateData[nextPosition.toString()] = name;
 
-        await chairOrderRef.set(updateData, { merge: true });
+        await chairsOrderRef.set(updateData, { merge: true });
 
         e.target.reset();
         bootstrap.Modal.getInstance(document.getElementById('addChairModal')).hide();
@@ -1660,7 +1659,7 @@ async function editChair(position) {
         try {
             const updateData = {};
             updateData[position] = newName;
-            await db.collection('chairOrder').doc(CHAIR_ORDER_UID).update(updateData);
+            await db.collection('chairsOrder').doc(CHAIR_ORDER_UID).update(updateData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb aktualisiert!', 'success');
@@ -1675,7 +1674,7 @@ async function deleteChair(position) {
         try {
             const deleteData = {};
             deleteData[position] = firebase.firestore.FieldValue.delete();
-            await db.collection('chairOrder').doc(CHAIR_ORDER_UID).update(deleteData);
+            await db.collection('chairsOrder').doc(CHAIR_ORDER_UID).update(deleteData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb gelöscht!', 'success');
@@ -1691,7 +1690,7 @@ async function editChairFromPlan(position) {
         try {
             const updateData = {};
             updateData[position] = newName;
-            await db.collection('chairOrder').doc(CHAIR_ORDER_UID).update(updateData);
+            await db.collection('chairsOrder').doc(CHAIR_ORDER_UID).update(updateData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb aktualisiert!', 'success');
@@ -1738,8 +1737,8 @@ async function dragDrop(event, targetPosition) {
     isDropping = true;
 
     try {
-        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
-        const snapshot = await chairOrderRef.get();
+        const chairsOrderRef = db.collection('chairsOrder').doc(CHAIR_ORDER_UID);
+        const snapshot = await chairsOrderRef.get();
 
         console.log('✅ Snapshot geladen');
 
@@ -1775,7 +1774,7 @@ async function dragDrop(event, targetPosition) {
         }
 
         console.log('🎯 Update Data:', updateData);
-        await chairOrderRef.update(updateData);
+        await chairsOrderRef.update(updateData);
 
         await loadChairs();
         await loadChairPlan();
