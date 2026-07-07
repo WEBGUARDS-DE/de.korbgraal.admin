@@ -278,7 +278,7 @@ async function refreshContracts() {
         // Ohne orderBy/limit zum Testen
         const snapshot = await contractsRef.get();
 
-        const tbody = document.querySelector('#contractsTable tbody');
+        const tbody = document.querySelector('#contractsTable');
         let html = '';
 
         if (snapshot.empty) {
@@ -443,7 +443,7 @@ async function refreshContracts2025() {
         const contractsRef = db.collection('contracts').doc('v2').collection(LIVE_UID);
         const snapshot = await contractsRef.get();
 
-        const tbody = document.querySelector('#contractsTable2025 tbody');
+        const tbody = document.querySelector('#contractsTable2025');
         let html = '';
 
         // Filter: Nur Buchungen ab 2026-06-22
@@ -1247,9 +1247,15 @@ function editChairInline(cell) {
 
 async function loadChairPlan() {
     try {
+        // Guard: #chairGrid existiert nicht mehr (veraltet in neuer Tab-Struktur)
+        const chairGrid = document.getElementById('chairGrid');
+        if (!chairGrid) {
+            console.log('ℹ️ loadChairPlan skipped - #chairGrid nicht gefunden (veraltet in neuer Tab-Struktur)');
+            return;
+        }
+
         const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
         const snapshot = await chairOrderRef.get();
-        const chairGrid = document.getElementById('chairGrid');
         let html = '<div class="row g-3">';
 
         if (!snapshot.exists || !snapshot.data()) {
