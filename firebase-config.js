@@ -65,6 +65,7 @@ initFirebase();
 
 // ==================== APP CONFIG ====================
 const DEV_UID = "dGC8miw2hybTvMHVGvQcc2lCfZH3";
+const CHAIR_ORDER_UID = "6B590N5iGVTDF3mubg9rzTeyMYx2";
 
 const APP_CONFIG = {
     appName: "Strandkorb 26",

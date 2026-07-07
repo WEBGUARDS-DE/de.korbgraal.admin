@@ -1157,7 +1157,7 @@ async function updateSettings() {
 // ==================== CHAIRS ====================
 async function loadChairs() {
     try {
-        const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
         const snapshot = await chairOrderRef.get();
 
         const tbody = document.getElementById('chairsTable');
@@ -1219,7 +1219,7 @@ function editChairInline(cell) {
         const newValue = input.value.trim();
         
         try {
-            const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+            const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
             const snapshot = await chairOrderRef.get();
             const data = snapshot.data() || {};
             
@@ -1247,7 +1247,7 @@ function editChairInline(cell) {
 
 async function loadChairPlan() {
     try {
-        const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
         const snapshot = await chairOrderRef.get();
         const chairGrid = document.getElementById('chairGrid');
         let html = '<div class="row g-3">';
@@ -1601,7 +1601,7 @@ document.getElementById('addChairForm')?.addEventListener('submit', async (e) =>
         const name = document.getElementById('chairName').value;
         const type = document.getElementById('chairType').value;
 
-        const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
         const snapshot = await chairOrderRef.get();
 
         let nextPosition = 1;
@@ -1632,7 +1632,7 @@ async function editChair(position) {
         try {
             const updateData = {};
             updateData[position] = newName;
-            await db.collection('chairOrder').doc(DEV_UID).update(updateData);
+            await db.collection('chairOrder').doc(CHAIR_ORDER_UID).update(updateData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb aktualisiert!', 'success');
@@ -1647,7 +1647,7 @@ async function deleteChair(position) {
         try {
             const deleteData = {};
             deleteData[position] = firebase.firestore.FieldValue.delete();
-            await db.collection('chairOrder').doc(DEV_UID).update(deleteData);
+            await db.collection('chairOrder').doc(CHAIR_ORDER_UID).update(deleteData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb gelöscht!', 'success');
@@ -1663,7 +1663,7 @@ async function editChairFromPlan(position) {
         try {
             const updateData = {};
             updateData[position] = newName;
-            await db.collection('chairOrder').doc(DEV_UID).update(updateData);
+            await db.collection('chairOrder').doc(CHAIR_ORDER_UID).update(updateData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb aktualisiert!', 'success');
@@ -1710,7 +1710,7 @@ async function dragDrop(event, targetPosition) {
     isDropping = true;
 
     try {
-        const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+        const chairOrderRef = db.collection('chairOrder').doc(CHAIR_ORDER_UID);
         const snapshot = await chairOrderRef.get();
 
         console.log('✅ Snapshot geladen');
