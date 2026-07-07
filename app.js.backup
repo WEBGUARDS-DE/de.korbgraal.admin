@@ -94,8 +94,8 @@ async function loadDashboard() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        console.log("📍 Versuche Contracts zu laden von: contracts/v2/" + DEV_UID);
-        const contractsRef = db.collection('contracts').doc('v2').collection(DEV_UID);
+        console.log("📍 Versuche Contracts zu laden von: contracts/v2/" + SHARED_UID);
+        const contractsRef = db.collection('contracts').doc('v2').collection(SHARED_UID);
         console.log("📍 Query ausführen (ohne WHERE für Test)...");
 
         // Test: Lade ALLE contracts ohne WHERE-Clause um Permissions zu testen
@@ -175,7 +175,7 @@ async function loadCharts() {
             const nextDate = new Date(date);
             nextDate.setDate(nextDate.getDate() + 1);
 
-            const contractsRef = db.collection('contracts').doc('v2').collection(DEV_UID);
+            const contractsRef = db.collection('contracts').doc('v2').collection(SHARED_UID);
             const snapshot = await contractsRef
                 .where('startDateTime', '>=', date)
                 .where('startDateTime', '<', nextDate)
@@ -223,7 +223,7 @@ async function loadCharts() {
         });
 
         // Types Chart (Distribution)
-        const typesRef = db.collection('contracts').doc('v2').collection(DEV_UID);
+        const typesRef = db.collection('contracts').doc('v2').collection(SHARED_UID);
         const typesSnapshot = await typesRef.get();
 
         const typesCounts = {};
@@ -274,7 +274,7 @@ async function refreshContracts() {
             userMap.set(doc.id, doc.data().email || 'Unknown');
         });
 
-        const contractsRef = db.collection('contracts').doc('v2').collection(DEV_UID);
+        const contractsRef = db.collection('contracts').doc('v2').collection(SHARED_UID);
         // Ohne orderBy/limit zum Testen
         const snapshot = await contractsRef.get();
 
@@ -380,7 +380,7 @@ async function refreshContracts() {
 
 async function editContract(contractId) {
     try {
-        const contractDoc = await db.collection('contracts').doc('v2').collection(DEV_UID).doc(contractId).get();
+        const contractDoc = await db.collection('contracts').doc('v2').collection(SHARED_UID).doc(contractId).get();
         if (contractDoc.exists) {
             const data = contractDoc.data();
             const newPrice = prompt('Neuer Preis:', data.price);
@@ -399,7 +399,7 @@ async function editCustomer(contractId, currentCustomer) {
     const newCustomer = prompt('Neuer Kundenname:', currentCustomer);
     if (newCustomer !== null && newCustomer !== '') {
         try {
-            await db.collection('contracts').doc('v2').collection(DEV_UID).doc(contractId).update({
+            await db.collection('contracts').doc('v2').collection(SHARED_UID).doc(contractId).update({
                 customer: newCustomer
             });
             refreshContracts();
@@ -616,7 +616,7 @@ async function refreshSyncLogs() {
                 const timestamp = data.timestamp?.toDate?.() || new Date(data.timestamp);
                 const statusBadge = data.status === 'success' ? 'success' : 'danger';
 
-                const userId = data.user || DEV_UID;
+                const userId = data.user || SHARED_UID;
                 const userEmail = userMap.get(userId) || userId.substring(0, 8);
 
                 html += `
@@ -660,7 +660,7 @@ async function refreshPrintLogs() {
                 const data = doc.data();
                 const timestamp = data.timestamp?.toDate?.() || new Date(data.timestamp);
 
-                const userId = data.user || DEV_UID;
+                const userId = data.user || SHARED_UID;
                 const userEmail = userMap.get(userId) || userId.substring(0, 8);
 
                 html += `
@@ -1070,7 +1070,7 @@ async function loadDevices() {
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            const userId = data.user || DEV_UID;
+            const userId = data.user || SHARED_UID;
             const userEmail = userMap.get(userId) || userId.substring(0, 8);
             const deviceSerial = data.deviceSerial || data.user?.substring(0, 8) || 'Unknown';
 
@@ -1157,7 +1157,7 @@ async function updateSettings() {
 // ==================== CHAIRS ====================
 async function loadChairs() {
     try {
-        const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+        const chairOrderRef = db.collection('chairOrder').doc(SHARED_UID);
         const snapshot = await chairOrderRef.get();
 
         const tbody = document.getElementById('chairsTable');
@@ -1219,7 +1219,7 @@ function editChairInline(cell) {
         const newValue = input.value.trim();
         
         try {
-            const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+            const chairOrderRef = db.collection('chairOrder').doc(SHARED_UID);
             const snapshot = await chairOrderRef.get();
             const data = snapshot.data() || {};
             
@@ -1247,7 +1247,7 @@ function editChairInline(cell) {
 
 async function loadChairPlan() {
     try {
-        const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+        const chairOrderRef = db.collection('chairOrder').doc(SHARED_UID);
         const snapshot = await chairOrderRef.get();
         const chairGrid = document.getElementById('chairGrid');
         let html = '<div class="row g-3">';
@@ -1601,7 +1601,7 @@ document.getElementById('addChairForm')?.addEventListener('submit', async (e) =>
         const name = document.getElementById('chairName').value;
         const type = document.getElementById('chairType').value;
 
-        const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+        const chairOrderRef = db.collection('chairOrder').doc(SHARED_UID);
         const snapshot = await chairOrderRef.get();
 
         let nextPosition = 1;
@@ -1632,7 +1632,7 @@ async function editChair(position) {
         try {
             const updateData = {};
             updateData[position] = newName;
-            await db.collection('chairOrder').doc(DEV_UID).update(updateData);
+            await db.collection('chairOrder').doc(SHARED_UID).update(updateData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb aktualisiert!', 'success');
@@ -1647,7 +1647,7 @@ async function deleteChair(position) {
         try {
             const deleteData = {};
             deleteData[position] = firebase.firestore.FieldValue.delete();
-            await db.collection('chairOrder').doc(DEV_UID).update(deleteData);
+            await db.collection('chairOrder').doc(SHARED_UID).update(deleteData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb gelöscht!', 'success');
@@ -1663,7 +1663,7 @@ async function editChairFromPlan(position) {
         try {
             const updateData = {};
             updateData[position] = newName;
-            await db.collection('chairOrder').doc(DEV_UID).update(updateData);
+            await db.collection('chairOrder').doc(SHARED_UID).update(updateData);
             await loadChairs();
             await loadChairPlan();
             showToast('✅ Korb aktualisiert!', 'success');
@@ -1710,7 +1710,7 @@ async function dragDrop(event, targetPosition) {
     isDropping = true;
 
     try {
-        const chairOrderRef = db.collection('chairOrder').doc(DEV_UID);
+        const chairOrderRef = db.collection('chairOrder').doc(SHARED_UID);
         const snapshot = await chairOrderRef.get();
 
         console.log('✅ Snapshot geladen');

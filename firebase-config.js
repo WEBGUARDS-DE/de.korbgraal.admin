@@ -64,7 +64,7 @@ function initFirebase() {
 initFirebase();
 
 // ==================== APP CONFIG ====================
-const SHARED_UID = "dGC8miw2hybTvMHVGvQcc2lCfZH3";
+const DEV_UID = "dGC8miw2hybTvMHVGvQcc2lCfZH3";
 
 const APP_CONFIG = {
     appName: "Strandkorb 26",
