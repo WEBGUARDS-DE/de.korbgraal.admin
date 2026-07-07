@@ -1008,8 +1008,10 @@ async function loadUsers() {
         console.log(`✅ ${snapshot.size} Benutzer geladen`);
     } catch (error) {
         console.error('❌ Users load error:', error);
-        const tbody = document.querySelector('#usersTable');
-        tbody.innerHTML = `<tr><td colspan="5" class="text-danger">Fehler beim Laden der Benutzer: ${error.message}</td></tr>`;
+        const tbody2 = document.querySelector('#usersTable');
+        if (tbody2) {
+            tbody2.innerHTML = `<tr><td colspan="5" class="text-danger">Fehler beim Laden der Benutzer: ${error.message}</td></tr>`;
+        }
     }
 }
 
@@ -1111,7 +1113,6 @@ async function loadDevices() {
             }
         });
 
-        const tbody = document.querySelector('#devicesTable');
         let html = '';
 
         if (devicesMap.size === 0) {
