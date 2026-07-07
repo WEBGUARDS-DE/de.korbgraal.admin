@@ -693,6 +693,10 @@ async function refreshPrintLogs() {
 async function loadPrices() {
     try {
         const pricesGrid = document.getElementById('pricesGrid');
+        if (!pricesGrid) {
+            console.log('ℹ️ loadPrices skipped - #pricesGrid nicht in HTML (alte Tab-Struktur)');
+            return;
+        }
         console.log("📍 Lade Preise");
 
         const firebasePrices = {};
