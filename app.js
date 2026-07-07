@@ -1179,10 +1179,15 @@ async function updateSettings() {
 // ==================== CHAIRS ====================
 async function loadChairs() {
     try {
+        const tbody = document.getElementById('chairsTable');
+        if (!tbody) {
+            console.log('ℹ️ loadChairs skipped - #chairsTable nicht in HTML (alte Tab-Struktur)');
+            return;
+        }
+
         const chairsOrderRef = db.collection('chairsOrder').doc(CHAIR_ORDER_UID);
         const snapshot = await chairsOrderRef.get();
 
-        const tbody = document.getElementById('chairsTable');
         let html = '';
 
         if (!snapshot.exists || !snapshot.data()) {
